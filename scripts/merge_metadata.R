@@ -1,13 +1,33 @@
 
+# This script takes in either a weighted contigs file 
+# or a bins file (which comes from a weighted contigs file)
+# and merges metadata to it. 
 
-## STEP 3. Metadata files are read in. 
-## STEP 4. Within a loop (iterates through all subjects), metadata is merged. 
+## STEP 1. Metadata files are read in. 
+## STEP 2. Within a loop (iterates through all subjects), metadata is merged. 
 
+library(readr)
+library(reshape)
+library(tidyr)
+library(splitstackshape)
+library(readxl)
+library(stringr)
+library(dplyr)
+library(data.table)
+
+
+# input dir
+pig.id.basedir = "/shared/homes/152324/out_new" # make sure you have permission to write in the "subjectDIR"/metabat folder
+source_dir = "/shared/homes/152324/metapigs_function/source_data/" # should contain: cohorts.xlsx, PigTrial_GrowthWtsGE.hlsx.xlsx, weights.csv, weights_final.csv
+
+#test here: 
+#pig.id.basedir = "/Users/dgaio/cloudstor/Gaio/out_new_test" 
+#source_dir = "/Users/dgaio/cloudstor/Gaio/github/metapigs_function/source_data/" # should contain: cohorts.xlsx, PigTrial_GrowthWtsGE.hlsx.xlsx, weights.csv, weights_final.csv
 
 
 
 ########################################################
-######### STEP 3 #######################################
+######### STEP 1 #######################################
 ########################################################
 
 # Read in metadata. 
@@ -49,44 +69,35 @@ weights <- rbind(weights,weights_final)
 
 
 ########################################################
-######### STEP 4 #######################################
+######### STEP 2 #######################################
 ########################################################
 
-# Loop over (clean) wa contig files to merge metadata 
-for (pig.id in list.files(pig.id.basedir)) {
-  pig.id.dir = file.path(pig.id.basedir, pig.id)
-  f <- paste(pig.id.dir,"metabat/wa_contigs_clean.csv", sep="/")
-  
-  # if the file exists, merge it to other dataframes:
-  if (file_test("-f", f)) {
-    print(paste0(f,"   exists"))
-    
-    dff <- read_csv(f, 
-                    col_types = cols(pig = col_character()))
-    
-    
-    # merge 1
-    f_cohorts <- merge.data.frame(dff,cohorts) %>% 
-      select("cohort", everything())
-    
-    # merge 2
-    f_cohorts_deets <- left_join(f_cohorts,pig_details)
-    
-    # merge 3
-    f_cohorts_deets_weights <- left_join(f_cohorts_deets,weights)
-    
-    # reorder columns 
-    final_wa_contigs <- f_cohorts_deets_weights %>%
-      select(cohort,pig,date,room,pen,weight,
-             breed,BIRTH_DAY,crate,maternal_sow,nurse_sow,sire,
-             bin,contigName,contigLen,value)
-    
-    
-    fwrite(
-      x = final_wa_contigs,
-      file = file.path(pig.id.dir, "metabat/wa_contigs_depths.csv"),
-      row.names=FALSE
-    )
-    
-  } else { print(paste0(f,"   does not exist"))}
-}
+
+
+# no loop, read in file and merge metadata 
+
+# merge 1
+f1 <- merge.data.frame(dff,cohorts) %>% 
+  select("cohort", everything())
+
+# merge 2
+f2 <- left_join(f1,pig_details)
+
+# merge 3
+f3 <- left_join(f2,weights)
+
+# reorder columns 
+f4 <- f3 %>%
+  select(cohort,pig,date,room,pen,weight,
+         breed,BIRTH_DAY,crate,maternal_sow,nurse_sow,sire,
+         bin,contigName,contigLen,value)
+
+
+fwrite(
+  x = f4,
+  file = file.path(pig.id.dir, ##########),
+  row.names=FALSE
+)
+
+
+
