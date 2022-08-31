@@ -6,7 +6,10 @@ library(stringr)
 library(data.table)
 
 
-pig.id.basedir = "/Users/dgaio/Desktop"
+pig.id.basedir = "/shared/homes/152324/contigs"
+
+# test
+# pig.id.basedir = "/Users/dgaio/Desktop"
 
 # reformat dates function 
 reformat_dates_fun <- function (my_df) {
@@ -52,15 +55,13 @@ reformat_dates_fun <- function (my_df) {
 
 
 
-
-
-
 # list bam files 
 my_list <- list.files(pig.id.basedir, pattern = "counts")
+my_list <- list.files(pig.id.basedir, pattern = ".bam")
 # exclude the output
 my_list <-my_list[!str_detect(my_list,pattern="parsed")]
 # exclude the dups 
-duplicates <- read_table("~/Desktop/duplicates", col_names = FALSE)
+duplicates <- read_table(paste0(pig.id.basedir,"/duplicates"), col_names = FALSE)
 discard <- duplicates %>%
   group_by(X1) %>%
   dplyr::arrange(desc(X3)) %>%
@@ -68,7 +69,7 @@ discard <- duplicates %>%
 my_list <- my_list[!(my_list %in% discard$X2)]
 
 
-# parse all: 
+# parse: 
 for (pig.id in my_list) {
   pig.id.dir = file.path(pig.id.basedir, pig.id)
   
