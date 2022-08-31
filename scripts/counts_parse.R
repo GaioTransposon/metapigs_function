@@ -4,6 +4,7 @@ library(dplyr)
 library(ggplot2)
 library(stringr)
 library(data.table)
+library(tidyverse)
 
 
 pig.id.basedir = "/shared/homes/152324/contigs"
@@ -69,8 +70,12 @@ discard <- duplicates %>%
 my_list <- my_list[!(my_list %in% discard$X2)]
 
 
+
+all_bins_to_contigs <- read_csv("~/Desktop/all_bins_to_contigs.csv")
+
+
 # parse: 
-for (pig.id in my_list) {
+for (pig.id in my_list[1]) {
   pig.id.dir = file.path(pig.id.basedir, pig.id)
   
   contig_counts <- read_table(pig.id.dir,
@@ -101,9 +106,18 @@ for (pig.id in my_list) {
     contig_counts$date <- paste0(20,contig_counts$date) # 20 upstream of year (e.g. "2017")
     contig_counts$date <- as.Date(contig_counts$date)
     contig_counts <- reformat_dates_fun(contig_counts)
-    print(head(contig_counts))
+    
+    
+    # merge bin data 
+    contig_counts$pig <- as.character(contig_counts$pig)
+    contig_counts_bins <- left_join(contig_counts,all_bins_to_contigs, by=c("contig","pig"))
+    
+    # if contig has not been binned to any bin, explicitly attribute "no_bin" string
+    contig_counts_bins$bin <- contig_counts_bins$bin %>% replace_na("no_bin")
+    
+    print(head(contig_counts_bins))
     fwrite(
-      x = contig_counts,
+      x = contig_counts_bins,
       file = paste0(sub('\\.bam$', '', pig.id.dir),"_contig_Counts_parsed"),
       row.names=FALSE
     )
@@ -115,16 +129,22 @@ for (pig.id in my_list) {
 
     print("it's a neg ctrl")
     contig_counts$sample_2_2 <- gsub(".bam",replacement = "",x=contig_counts$sample_2_2)
-    contig_counts$pig <- paste0(contig_counts$sample_2_1,"_R",contig_counts$sample_2_2)
-    contig_counts$date <- "tNONE"
-    contig_counts <- contig_counts %>%
-      dplyr::select(pig,date,X1,X2,X3,X4)
-    colnames(contig_counts) <- c ("pig", "date", "contig","contigLen","mapped","unmapped")
-    contig_counts <- contig_counts %>%
-      dplyr::select(pig,date,contig,contigLen,mapped,unmapped)
-    print(head(contig_counts))
+    
+    # merge bin data
+    colnames(contig_counts)[colnames(contig_counts)=="sample_1"] <- "pig"
+    colnames(contig_counts)[colnames(contig_counts)=="X1"] <- "contig"
+    contig_counts_bins <- left_join(contig_counts,all_bins_to_contigs, by=c("contig","pig"))
+    # if contig has not been binned to any bin, explicitly attribute "no_bin" string
+    contig_counts_bins$bin <- contig_counts_bins$bin %>% replace_na("no_bin")
+    contig_counts_bins$pig <- NULL
+    contig_counts_bins$pig <- paste0(contig_counts_bins$sample_2_1,"_R",contig_counts_bins$sample_2_2)
+    contig_counts_bins$date <- "tNONE"
+    contig_counts_bins <- contig_counts_bins %>%
+      dplyr::select(pig,date,contig,X2,X3,X4,bin)
+    colnames(contig_counts_bins) <- c ("pig", "date", "contig","contigLen","mapped","unmapped","bin")
+    print(head(contig_counts_bins))
     fwrite(
-      x = contig_counts,
+      x = contig_counts_bins,
       file = paste0(sub('\\.bam$', '', pig.id.dir),"_contig_Counts_parsed"),
       row.names=FALSE
     )
@@ -144,15 +164,26 @@ for (pig.id in my_list) {
     contig_counts$date <- paste0(20,contig_counts$date) # 20 upstream of year (e.g. "2017")
     contig_counts$date <- as.Date(contig_counts$date)
     contig_counts <- reformat_dates_fun(contig_counts)
-    print(head(contig_counts))
+
+    # merge bin data 
+    contig_counts$pig <- as.character(contig_counts$pig)
+    contig_counts_bins <- left_join(contig_counts,all_bins_to_contigs, by=c("contig","pig"))
+    
+    # if contig has not been binned to any bin, explicitly attribute "no_bin" string
+    contig_counts_bins$bin <- contig_counts_bins$bin %>% replace_na("no_bin")
+    
+    print(head(contig_counts_bins))
     fwrite(
-      x = contig_counts,
+      x = contig_counts_bins,
       file = paste0(sub('\\.bam$', '', pig.id.dir),"_contig_Counts_parsed"),
       row.names=FALSE
     )
+    
   }
   
 }
+
+
 
 
 

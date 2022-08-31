@@ -109,7 +109,7 @@ for (pig.id in list.files(pig.id.basedir)) {
 # 3. merging depth_clean.csv with bins_to_contigs.csv
 for (pig.id in list.files(pig.id.basedir)) {
   pig.id.dir = file.path(pig.id.basedir, pig.id, "metabat")
-  
+
   # if the dir is not empty:
   if (file.exists(pig.id.dir)) {
     
@@ -131,12 +131,17 @@ for (pig.id in list.files(pig.id.basedir)) {
       row.names=NULL
     )
     
-    a_b <- merge(
-      a, 
-      b, 
-      by.x="contigName", 
-      by.y="contig"
-    )
+    # need to change the column name to match 
+    id <- b$pig[1]
+    b$pig <- NULL
+    colnames(a)[colnames(a)=="contigName"] <- "contig"
+    
+    # merge bin info to depths  
+    a_b <- full_join(a, b)
+    a_b$pig <- as.character(id)
+    
+    # if contig has not been binnen to any bin, explicitly attribute "no_bin" string
+    a_b$bin <- a_b$bin %>% replace_na("no_bin")
     
     fwrite(
       x = a_b,

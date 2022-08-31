@@ -116,7 +116,7 @@ for (pig.id in list.files(pig.id.basedir)) {
   
 }
 
-
+View(clu_bins_depths)
 
 
 # # Metabat's peeps wrote this script to aggregate contig depths into bins depths. 

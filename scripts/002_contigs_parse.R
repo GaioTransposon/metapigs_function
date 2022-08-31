@@ -106,7 +106,7 @@ fun_pig_sow <- function (my_file) {
   # they were re-sampled the morning after (before treatment was administered)
   # for this reason we are going to make groups of sampling dates as follows } 
   no_reps_contigs <- contigs_long %>%
-    group_by(pig, bin, contigName, contigLen, date) %>%
+    group_by(pig, bin, contig, contigLen, date) %>%
     dplyr::summarise(value=mean(value))
   
 }
@@ -134,7 +134,7 @@ fun_neg_ctrls <- function(my_file) {
   contigs_long$pig <- paste0(contigs_long$pig,"_",contigs_long$name_1)
   contigs_long$date <- "tNONE"
   no_reps_contigs <- contigs_long %>%
-    group_by(pig, bin, contigName, contigLen, date) %>%
+    group_by(pig, bin, contig, contigLen, date) %>%
     dplyr::summarise(value=mean(value))
 }
 
@@ -173,7 +173,7 @@ fun_pos_ctrls <- function (my_file) {
   contigs_long$pig <- paste0(contigs_long$pig,"_",paste0("R",contigs_long$name_2))
   
   no_reps_contigs <- contigs_long %>%
-    group_by(pig, bin, contigName, contigLen, date) %>%
+    group_by(pig, bin, contig, contigLen, date) %>%
     dplyr::summarise(value=mean(value))
   
 }
