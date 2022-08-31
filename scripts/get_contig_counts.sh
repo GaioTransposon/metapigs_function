@@ -78,3 +78,15 @@ paste dups_basename dups_02names dups_02 > duplicates_02
 cat duplicates_01 duplicates_02 > duplicates # this file is used by script 
 counts_parse.R which pick the best sample (highest read count) out of the 
 two duplicates 
+
+######################################################
+######################################################
+
+
+# concatenate all bins_to_contigs.csv files  (contains associations of 
+pig-bin-contig):
+cat /shared/homes/152324/out_new/*/metabat/bins_to_contigs.csv > 
+all_bins_to_contigs.csv 
+
+
+

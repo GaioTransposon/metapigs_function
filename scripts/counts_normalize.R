@@ -1,66 +1,59 @@
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+
+
+#pig.id.basedir = "/shared/homes/152324/contigs/"
+
+# test
+pig.id.basedir = "/Users/dgaio/Desktop"
+
+
+# open each file, add pseudocount, and normalize number of mapped reads by contig length 
+for (pig.id in list.files(pig.id.basedir, pattern = "parsed")) {
+  pig.id.dir = file.path(pig.id.basedir, pig.id)
+  
+  counts_parsed <- read_csv(pig.id.dir,
+                            col_types = cols(pig = col_character()))
+  
+  # pseudocount addition
+  counts_parsed$mapped <- counts_parsed$mapped+0.1 
+  
+  # weight contig counts 
+  counts_weighted <- counts_parsed %>% 
+    dplyr::filter(!contig=="*") %>% # remove row that contains unmapped reads data (reads that have not been mapped to any contig)
+    dplyr::mutate(wa_mapped=mapped/contigLen) %>% # weighting mapped counts by contig length 
+    dplyr::select(pig,date,contig,contigLen,wa_mapped)
+  
+  # save 
+  fwrite(counts_weighted, paste0(pig.id.basedir, "/weighted_counts"))
+  
+}
 
 
 
-
-# Snippet of code to show why we need to weight the counts by the contig length:
-
-# # take a positive control as an example, or a sow sample (because only one time point)
-# # and look at the bias: longer contig ==> more mapped reads 
-# # and look at the removal of this bias with the normalization 
-# test <- contig_counts %>%
-#   select(contig,mapped,contigLen)
+# ######################################################
+# ######################################################
 # 
-# test <- test %>%
-#   dplyr::filter(contigLen>1) %>% # this just removes the one row that samtools created to show unmapped reads (to any contig)
-#   dplyr::mutate(new_bin = cut(contigLen, breaks=8))
-# 
-# test %>% group_by(new_bin) %>% 
-#   summarise(min_Len=min(contigLen),
-#             max_Len=max(contigLen),
-#             min_map=min(mapped),
-#             max_map=max(mapped))
+# # # Snippet of code to show why we need to weight the counts by the contig length:
+# # # take a positive control as an example, or a sow sample (because only one time point
+# # # so contigs with zero counts will not show up)
+# # # and look at the bias: longer contig ==> more mapped reads
+# # # and look at the removal of this bias with the normalization
 # 
 # # before normalization
-# test %>% 
+# counts_parsed %>%
+#   dplyr::mutate(new_bin = cut(contigLen, breaks=8)) %>%
 #   ggplot(., aes(x=new_bin,y=mapped))+
 #   geom_boxplot()
 # 
 # # after normalization
-# test %>%
-#   mutate(norm_mapped=mapped/contigLen) %>% 
-#   ggplot(., aes(x=new_bin,y=norm_mapped))+
+# counts_weighted %>%
+#   dplyr::mutate(new_bin = cut(contigLen, breaks=8)) %>%
+#   ggplot(., aes(x=new_bin,y=wa_mapped))+
 #   geom_boxplot()
-
-
-
-
-
-
-
-
-
-
-
-
-# open each and concatenate to existing dataframe (so each file won t stay in memory)
-contig_counts %>% 
-  dplyr::filter(!contig=="*") %>% # remove row that contains unmapped reads data (reads that have not been mapped to any contig)
-  dplyr::select(pig,date,duplicate,contig,contigLen,mapped)
-
-
-# open large file and run the following processes: 
-# dedup (mean), pseudocount addition, and weighting contig counts 
-contig_counts %>% 
-  dplyr::filter(!contig=="*") %>%
-  group_by(pig,date,contig) %>%
-  dplyr::summarise(mapped=mean(mapped)+1, # deduplicating & adding pseudocount to all contigs 
-                   contigLen=mean(contigLen), # deduplicating 
-                   wa_mapped=mapped/contigLen) # weighting mapped counts by contig length 
-fwrite(contig_counts, "weighted_counts")
-
-# normalize based on lib size 
-fwrite(weighted_counts_lib_size_normalized)
-
-
-
+# 
+# ######################################################
+# ######################################################
 
