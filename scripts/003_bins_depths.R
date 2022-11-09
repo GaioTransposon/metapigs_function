@@ -22,12 +22,12 @@ library(data.table)
 # input dir
 pig.id.basedir = "/shared/homes/152324/out_new" # make sure you have permission to write in the "subjectDIR"/metabat folder
 source_dir = "/shared/homes/152324/metapigs_function/source_data/" # should contain: Cdb.csv
+middle_dir = "/shared/homes/152324/metapigs_function/middle_dir/" 
 
 #test here: 
 #pig.id.basedir = "/Users/dgaio/cloudstor/Gaio/out_new_test" 
 #source_dir = "/Users/dgaio/cloudstor/Gaio/github/metapigs_function/source_data/" # should contain: Cdb.csv
-
-
+#middle_dir = "/Users/dgaio/cloudstor/Gaio/github/metapigs_function/middle_dir/
 
 
 ########################################################
@@ -50,6 +50,7 @@ Cdb3 <- Cdb2[c("pig", "bin", "secondary_cluster")]
 
 ########################################################
 
+my_list<-list() # to put bin depths 
 
 # contigs depths to bins depths 
 for (pig.id in list.files(pig.id.basedir)) {
@@ -104,11 +105,7 @@ for (pig.id in list.files(pig.id.basedir)) {
     clu_bins_depths <- clu_bins_depths %>% 
       dplyr::select(secondary_cluster, everything())
     
-
-    fwrite(
-      x = clu_bins_depths,
-      file = file.path(pig.id.dir, "bin_depths.csv"),
-      row.names=FALSE)
+    my_list[[pig.id]] <- clu_bins_depths
     
   }
   
@@ -116,7 +113,13 @@ for (pig.id in list.files(pig.id.basedir)) {
   
 }
 
-View(clu_bins_depths)
+
+#######
+# Join weighted bins dataframes: 
+all_bins_depths <- do.call("rbind", my_list)
+
+fwrite(all_bins_depths, paste0(dirname(pig.id.dir), "/all_bins_depths.csv"))
+#######
 
 
 # # Metabat's peeps wrote this script to aggregate contig depths into bins depths. 

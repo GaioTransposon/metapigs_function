@@ -12,6 +12,10 @@ pig.id.basedir = "/shared/homes/152324/contigs"
 # test
 # pig.id.basedir = "/Users/dgaio/Desktop"
 
+# read in contigs to bins associations
+all_bins_to_contigs <- read_csv(paste0(pig.id.basedir,"/all_bins_to_contigs.csv"))
+
+
 # reformat dates function 
 reformat_dates_fun <- function (my_df) {
   
@@ -71,11 +75,10 @@ my_list <- my_list[!(my_list %in% discard$X2)]
 
 
 
-all_bins_to_contigs <- read_csv("~/Desktop/all_bins_to_contigs.csv")
 
 
 # parse: 
-for (pig.id in my_list[1]) {
+for (pig.id in my_list) {
   pig.id.dir = file.path(pig.id.basedir, pig.id)
   
   contig_counts <- read_table(pig.id.dir,
