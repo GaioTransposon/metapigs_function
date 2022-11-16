@@ -14,8 +14,9 @@ pig.id.basedir = "/shared/homes/152324/contigs"
 source_dir = "/shared/homes/152324/metapigs_function/source_data/" # should contain: Cdb.csv
 
 # test on local 
-#pig.id.basedir = "/Users/dgaio/cloudstor/Gaio/contigs"
-#source_dir = "/Users/dgaio/cloudstor/Gaio/github/metapigs_function/source_data/" # should contain: Cdb.csv
+
+pig.id.basedir = "~/cloudstor/Gaio/contigs"
+source_dir = "~/github/metapigs_function/source_data/" # should contain: Cdb.csv
 
 #######
 # Read in clustering info:
@@ -61,8 +62,11 @@ give_stats <- function(df) {
 my_list<-list() # for stats 
 my_list2<-list() # for bins 
 
+
+these_files <- grep(list.files(pig.id.basedir, pattern = "parsed"), 
+                    pattern='weighted', invert=TRUE, value=TRUE)
 # open each file, get stats, weight mapped reads by contig length, save 
-for (pig.id in list.files(pig.id.basedir, pattern = "parsed")) {
+for (pig.id in these_files) {
   pig.id.dir = file.path(pig.id.basedir, pig.id)
 
   counts_parsed <- read_csv(pig.id.dir,
