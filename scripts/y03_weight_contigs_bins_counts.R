@@ -10,11 +10,10 @@ library(data.table)
 library(tidyverse)
 
 
-pig.id.basedir = "/shared/homes/152324/contigs"
-source_dir = "/shared/homes/152324/metapigs_function/source_data/" # should contain: Cdb.csv
+#pig.id.basedir = "/shared/homes/152324/contigs"
+#source_dir = "/shared/homes/152324/metapigs_function/source_data/" # should contain: Cdb.csv
 
 # test on local 
-
 pig.id.basedir = "~/cloudstor/Gaio/contigs"
 source_dir = "~/github/metapigs_function/source_data/" # should contain: Cdb.csv
 
@@ -65,6 +64,7 @@ my_list2<-list() # for bins
 
 these_files <- grep(list.files(pig.id.basedir, pattern = "parsed"), 
                     pattern='weighted', invert=TRUE, value=TRUE)
+
 # open each file, get stats, weight mapped reads by contig length, save 
 for (pig.id in these_files) {
   pig.id.dir = file.path(pig.id.basedir, pig.id)
@@ -103,7 +103,7 @@ for (pig.id in these_files) {
       # mapped reads normalized by contig length
       mapped_wa=mapped/contigLen) 
   
-  fwrite(weighted_contigs_counts, paste0(pig.id.dir, "_weighted_contigs.csv"))
+  #fwrite(weighted_contigs_counts, paste0(pig.id.dir, "_weighted_contigs.csv"))
   #####
   
   ##### bins 
@@ -125,11 +125,16 @@ for (pig.id in these_files) {
 # Stats save: 
 contig_stats <- do.call("rbind", my_list)
 
-contig_stats %>% 
+plot <- contig_stats %>% 
   ggplot(., aes(x=type,y=value, fill=name), color=name) +
-  geom_bar(stat="identity")
+  geom_bar(stat="identity")+
+  xlab("")+
+  ylab("reads")+
+  theme(legend.title = element_blank())
 
-unique(contig_stats$date)
+pdf(paste0(dirname(pig.id.dir),"/contig_counts_stats.pdf"))
+plot 
+dev.off()
 
 fwrite(contig_stats, paste0(dirname(pig.id.dir), "/contig_counts_stats.csv"))
 #######
