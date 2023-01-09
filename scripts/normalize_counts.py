@@ -7,8 +7,6 @@ Created on Mon Dec 19 16:44:44 2022
 """
 
 import os
-from os import listdir
-from os.path import isfile, join
 import pandas as pd
 import glob
 
@@ -35,12 +33,15 @@ for file in os.listdir(mypath):
         dictionary[key] = group
 
 
-for my_key in dictionary:   
+for my_key in dictionary: 
+    print(my_key)
     
     # create empty list to accomodate dataframes
     appended_data=[]
     
     for my_file in dictionary[my_key]:
+        
+        print(my_file)
         
         # open file 
         df = pd.read_csv(os.path.join(mypath, my_file))
@@ -48,11 +49,14 @@ for my_key in dictionary:
         # remove row containing unmapped reads (to any contig) 
         df=df[df['contig'].str.contains("\*")==False]
         
+        # remove ".fa" suffix from bins 
+        df['bin'] = df['bin'].str.rstrip('.fa')
+        
         # normalize by lib size 
         df['norm_mapped_wa']=df['mapped_wa']/df['mapped_wa'].sum()
         
         # keep only relevant columns
-        df=df[['pig', 'date', 'contig', 'norm_mapped_wa']]
+        df=df[['pig', 'date', 'bin', 'contig', 'norm_mapped_wa']]
         
         # append to list 
         appended_data.append(df)

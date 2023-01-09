@@ -12,10 +12,7 @@ Created on Fri Jan  6 16:25:10 2023
 # python ./run_recognizer_parse.py
 
 import os
-from os import listdir
-from os.path import isfile, join
 import pandas as pd
-import glob
 
 
 mypath = input('Please pass path to directory containing recognizer output" \n') 
@@ -28,7 +25,7 @@ for my_dir in os.listdir(mypath):
         
         my_file=my_dir+"/reCOGnizer_results.tsv"
         print(my_dir)
-        name_of_file=mypath+'/'+my_dir+'/'+'reCOGnizer_results_eval_filtered.txt'
+        name_of_file=mypath+'/'+my_dir+'/'+'reCOGnizer_results_eval_filtered.csv'
         print(name_of_file)
         
         # read file 
@@ -57,18 +54,20 @@ for my_dir in os.listdir(mypath):
                                   'General functional category':'string',      #22
                                   'Functional category':'string'})             #23
         
-        
-        
         df1=df.loc[:,:]
         print(len(df1))
         
         # row index to column 
         df1 = df1.reset_index()
         
-        contig=df1['qseqid'].str.split('_', 15).str.get(1)
+        pig=df1['qseqid'].str.split('_').str.get(0).str.split('.').str.get(0)
+        pig=pd.Series(pig, name='pig')
+        
+        contig=df1['qseqid'].str.split('_').str.get(2)
+        contig='k141_'+contig
         contig=pd.Series(contig, name='contig')
         
-        orf=df1['qseqid'].str.rsplit('_', 14).str.get(1)
+        orf=df1['qseqid'].str.rsplit('_').str.get(3)
         orf=pd.Series(orf, name='orf')
         
         evalue=df1['evalue']
@@ -77,7 +76,7 @@ for my_dir in os.listdir(mypath):
         index=df1['index']
         index=pd.Series(index, name='index')
 
-        df2=pd.concat([contig,orf,evalue,index],axis=1)
+        df2=pd.concat([pig,contig,orf,evalue,index],axis=1)
         df2["contig_orf"] = df2['contig'].astype(str) +"_"+ df2["orf"]   
         
         print('pass qseqid,evalue,index,contig_orf')
@@ -85,17 +84,33 @@ for my_dir in os.listdir(mypath):
         df2=df2.dropna()
 
         # group by contig_orf and filter for lowest evalue
-        df3=df2.loc[df2.groupby('contig_orf').evalue.idxmin(),['contig_orf','index','evalue']]
-        print('grouping done')
+        df3=df2.loc[df2.groupby('contig_orf').evalue.idxmin(),['contig_orf','index','evalue','pig','contig']]
+        print('grouping and filtering done')
         
-        # filter original dataframe based on best (non-NaN) evalue per contig_orf  
-        m = df1.index.isin(df3.index)
-        df_final = df1[m]
+        
+        # merge with recognizer rest of data, but only taking the best evalue hits along
+        df_final = pd.merge(df1,df3)
         print(len(df_final))
-        print('filtering done')
+        print('merging done')
+        
+        # selection of columns of interest
+        df_final=df_final[["index", 
+                  "pig", 
+                  "contig", 
+                  "contig_orf", 
+                  "DB ID",
+                  "Protein description",
+                  "DB description",
+                  "EC number",
+                  "CDD ID",
+                  "pident",
+                  "length",
+                  "evalue",
+                  "General functional category",
+                  "Functional category"]]
 
-        name_of_file=mypath+'/'+my_dir+'/'+'reCOGnizer_results_eval_filtered.txt'
         df_final.to_csv(name_of_file, index=False) 
+        
         print('writing done')
 
         
