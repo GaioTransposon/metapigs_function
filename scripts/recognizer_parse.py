@@ -6,6 +6,11 @@ Created on Fri Jan  6 16:25:10 2023
 @author: dgaio
 """
 
+
+#run from command line as: 
+# conda activate recognizer_env
+# python ./run_recognizer_parse.py
+
 import os
 from os import listdir
 from os.path import isfile, join
@@ -13,16 +18,9 @@ import pandas as pd
 import glob
 
 
-
-#mypath = input('Please pass path to directory containing recognizer output" \n') 
+mypath = input('Please pass path to directory containing recognizer output" \n') 
 # /Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results     <-- local UZH
 # /shared/homes/152324/contigs/prodigal/reCOGnizer_results     <-- HPC UTS
-
-#print('this is your path', mypath)
-
-
-mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
-
 
 for my_dir in os.listdir(mypath):
     
@@ -30,11 +28,11 @@ for my_dir in os.listdir(mypath):
         
         my_file=my_dir+"/reCOGnizer_results.tsv"
         print(my_dir)
-        # open file 
-        #df = pd.read_csv(os.path.join(mypath, my_file))
+        name_of_file=mypath+'/'+my_dir+'/'+'reCOGnizer_results_eval_filtered.txt'
+        print(name_of_file)
         
-        
-        df = pd.read_table('/Users/dgaio/Desktop/contigs/reCOGnizer_results.tsv',
+        # read file 
+        df = pd.read_table(os.path.join(mypath, my_file),
                            dtype={'qseqid':'string'	,                           #1               
                                   'DB ID':'string'	,                           #2                
                                   'Protein description'	:'string',              #3
@@ -61,13 +59,13 @@ for my_dir in os.listdir(mypath):
         
         
         
-        df1=df.loc[1:20,:]
-        len(df1)
+        df1=df.loc[:,:]
+        print(len(df1))
         
         # row index to column 
         df1 = df1.reset_index()
         
-        contig=df1['qseqid'].str.rsplit('_', 15).str.get(1)
+        contig=df1['qseqid'].str.split('_', 15).str.get(1)
         contig=pd.Series(contig, name='contig')
         
         orf=df1['qseqid'].str.rsplit('_', 14).str.get(1)
@@ -82,17 +80,23 @@ for my_dir in os.listdir(mypath):
         df2=pd.concat([contig,orf,evalue,index],axis=1)
         df2["contig_orf"] = df2['contig'].astype(str) +"_"+ df2["orf"]   
         
+        print('pass qseqid,evalue,index,contig_orf')
         # drop NaN
         df2=df2.dropna()
-        
 
         # group by contig_orf and filter for lowest evalue
         df3=df2.loc[df2.groupby('contig_orf').evalue.idxmin(),['contig_orf','index','evalue']]
+        print('grouping done')
         
         # filter original dataframe based on best (non-NaN) evalue per contig_orf  
         m = df1.index.isin(df3.index)
         df_final = df1[m]
-        len(df_final)
+        print(len(df_final))
+        print('filtering done')
+
+        name_of_file=mypath+'/'+my_dir+'/'+'reCOGnizer_results_eval_filtered.txt'
+        df_final.to_csv(name_of_file, index=False) 
+        print('writing done')
 
         
 
