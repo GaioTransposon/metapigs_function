@@ -9,12 +9,11 @@ library(stringr)
 library(data.table)
 library(tidyverse)
 
-
 #pig.id.basedir = "/shared/homes/152324/contigs"
 #source_dir = "/shared/homes/152324/metapigs_function/source_data/" # should contain: Cdb.csv
 
 # test on local 
-pig.id.basedir = "~/cloudstor/Gaio/contigs"
+pig.id.basedir = "~/Desktop/contigs"
 source_dir = "~/github/metapigs_function/source_data/" # should contain: Cdb.csv
 
 #######
@@ -97,13 +96,13 @@ for (pig.id in these_files) {
   #####
   
   ##### contigs 
-  # normalize mapped read by contig length (POSSIBILITY: add pseudocopunt - discuss with Christian)
+  # normalize mapped read by contig length (extra POSSIBILITY: add pseudocount? discuss with Christian)
   weighted_contigs_counts <- counts_parsed %>% 
     dplyr::mutate(
       # mapped reads normalized by contig length
       mapped_wa=mapped/contigLen) 
   
-  #fwrite(weighted_contigs_counts, paste0(pig.id.dir, "_weighted_contigs.csv"))
+  fwrite(weighted_contigs_counts, paste0(pig.id.dir, "_weighted_contigs.csv"))
   #####
   
   ##### bins 
