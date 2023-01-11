@@ -3,6 +3,7 @@ library(dplyr)
 library(ggplot2)
 library(ggpubr)
 library(EnvStats)
+library(purrr)
 
 df <- read_csv("/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/14159_reCOGnizer_results_eval_filtered_final.csv")
 
@@ -24,8 +25,8 @@ df0 <- df %>%
 
 unique(df0$`Functional category`)
 
-df1 <- df0 #%>% 
-  #dplyr::filter(`Functional category`=="Carbohydrate transport and metabolism")
+df1 <- df0 %>% 
+  dplyr::filter(`Functional category`=="Carbohydrate transport and metabolism")
 
 fam <- df1 %>%
   group_by(`Protein description`) %>%
@@ -51,6 +52,8 @@ y$ind=gsub(".p.value*","",y$ind)
 y<-as.list(y$ind)
 class(y)
 
+NROW(y)
+
 
 # run through list of signif results
 df1_sig <- subset(df1, (`Protein description` %in% y))
@@ -60,23 +63,23 @@ to_plot <- split( df1_sig , f = df1_sig$`Protein description` )
 NROW(to_plot)
 
 
-#to_plot <- to_plot[1:90]
+to_plot <- to_plot[1:3]
 
 
 #Pdf
-pdf('/Users/dgaio/Desktop/contigs/Example.pdf')
+pdf('/Users/dgaio/Desktop/contigs/Example_carb.pdf')
 #Loop
-for (i in 1:104){
+for (i in 1:3){
   
   z <- to_plot[i]
 
   z <- do.call(rbind.data.frame, z)
 
-  p1 <- z %>%
-    ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-    geom_boxplot()+
-    ggtitle(z$`Protein description`)+
-    stat_n_text(vjust=-1) 
+  # p1 <- z %>%
+  #   ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+  #   geom_boxplot()+
+  #   ggtitle(z$`Protein description`)+
+  #   stat_n_text(vjust=-1) 
 
   p2 <- z %>%
     ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
@@ -84,10 +87,10 @@ for (i in 1:104){
     facet_wrap(~bin)+
     stat_n_text(vjust=-1) 
 
-  both <- ggarrange(
-    p1,p2,ncol=2)
+  # both <- ggarrange(
+  #   p1,p2,ncol=2)
 
-  plot(both)
+  plot(p2)
 
 }
 dev.off()
@@ -129,20 +132,19 @@ View(xx)
 
 ################################################################################
 
-# Connection dbcan with new data - for discussion in manuscript: 
-# Take along all significant hits from dbcan (differentially represented CAZy between timepoints). 
-# Save enzyme IDs to a list. Search the recognizer_results files for items of this list 
-# and see what `Protein description` they correspond to. Do we see the same/similar trends? 
-  
-library(openxlsx)
-df = read.xlsx("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8549361/bin/mgen-7-0501-s002.xlsx",sheet=2)
-View(df)
-df %>% dplyr::filter(p_value<=0.05) %>%
-  dplyr::select(enzID) %>%
-  distinct()
-# save as list
-
-# go through reCOGnizer_results_eval_filtered.csv files and grep each item 
-# for example: 
-# cat reCOGnizer_results_eval_filtered.csv | grep -w "GH25" | cut -f 6 | head
+# # Connection dbcan with new data - for discussion in manuscript: 
+# # Take along all significant hits from dbcan (differentially represented CAZy between timepoints). 
+# # Save enzyme IDs to a list. Search the recognizer_results files for items of this list 
+# # and see what `Protein description` they correspond to. Do we see the same/similar trends? 
+#   
+# library(openxlsx)
+# dbcan = read.xlsx("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8549361/bin/mgen-7-0501-s002.xlsx",sheet=2)
+# dbcan %>% dplyr::filter(p_value<=0.05) %>%
+#   dplyr::select(enzID) %>%
+#   distinct()
+# # save as list
+# 
+# # go through reCOGnizer_results_eval_filtered.csv files and grep each item 
+# # for example: 
+# # cat reCOGnizer_results_eval_filtered.csv | grep -w "GH25" | cut -f 6 | head
 

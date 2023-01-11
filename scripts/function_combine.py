@@ -40,8 +40,6 @@ controls=['Protexin','ColiGuard','MockCommunity','NegativeControl']
 
 
 for mysample in mysamples:
-    
-
 
     # open abundance file 
     counts=path_to_wa_contigs+"/counts_normalized_"+mysample
@@ -56,15 +54,13 @@ for mysample in mysamples:
     if mysample in controls:
     
         counts[['pig', 'replicate']] = counts['pig'].str.split('_', expand=True)
-    
+
 
     # join 
     df1 = pd.merge(counts,gtdb,on=['bin','pig'], how="left") # "left" keeps everything in counts 
     
-    for i in df1:
-        print(i)
-
-
+    # for i in df1:
+    #     print(i)
 
     recognizer=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/reCOGnizer_results_eval_filtered.csv"
     # read in
@@ -72,9 +68,8 @@ for mysample in mysamples:
     recognizer['pig'] = recognizer['pig'].astype(str)
     print(len(recognizer))
     
-    for i in recognizer:
-        print(i)
-        
+    # for i in recognizer:
+    #     print(i)
         
     print(len(recognizer))
     print(len(df1))
