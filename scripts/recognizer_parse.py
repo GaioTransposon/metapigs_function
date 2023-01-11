@@ -6,11 +6,6 @@ Created on Fri Jan  6 16:25:10 2023
 @author: dgaio
 """
 
-
-#run from command line as: 
-# conda activate recognizer_env
-# python ./run_recognizer_parse.py
-
 import os
 import pandas as pd
 
@@ -18,6 +13,7 @@ import pandas as pd
 mypath = input('Please pass path to directory containing recognizer output" \n') 
 # /Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results     <-- local UZH
 # /shared/homes/152324/contigs/prodigal/reCOGnizer_results     <-- HPC UTS
+
 
 for my_dir in os.listdir(mypath):
     

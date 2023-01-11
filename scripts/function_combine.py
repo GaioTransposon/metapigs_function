@@ -18,6 +18,7 @@ path_to_gtdb = input('Please pass path to GTDB_bins_completeTaxa file \n')
 # /Users/dgaio/github/metapigs_dry/middle_dir                   <-- local UZH
 # /shared/homes/152324                                          <-- HPC UTS
 
+
 # gtdb read in 
 gtdb = pd.read_csv(os.path.join(path_to_gtdb, "GTDB_bins_completeTaxa"))
 print(len(gtdb))
@@ -39,6 +40,8 @@ controls=['Protexin','ColiGuard','MockCommunity','NegativeControl']
 
 
 for mysample in mysamples:
+    
+
 
     # open abundance file 
     counts=path_to_wa_contigs+"/counts_normalized_"+mysample
@@ -93,7 +96,7 @@ for mysample in mysamples:
     print('writing done')
     
     
-    
+
         
         
         
