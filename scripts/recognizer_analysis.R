@@ -27,7 +27,7 @@ unique(df0$`Functional category`)
 
 df1 <- df0 %>% 
   dplyr::filter(`Functional category`=="Carbohydrate transport and metabolism")
-
+View(df1)
 fam <- df1 %>%
   group_by(`Protein description`) %>%
   tally() %>%
@@ -63,34 +63,36 @@ to_plot <- split( df1_sig , f = df1_sig$`Protein description` )
 NROW(to_plot)
 
 
-to_plot <- to_plot[1:3]
+#to_plot <- to_plot[1:3]
 
 
 #Pdf
 pdf('/Users/dgaio/Desktop/contigs/Example_carb.pdf')
 #Loop
-for (i in 1:3){
+for (i in 1:39){
   
-  z <- to_plot[i]
+  z <- to_plot[30]
 
   z <- do.call(rbind.data.frame, z)
 
-  # p1 <- z %>%
-  #   ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-  #   geom_boxplot()+
-  #   ggtitle(z$`Protein description`)+
-  #   stat_n_text(vjust=-1) 
+  p1 <- z %>%
+    ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+    geom_boxplot()+
+    ggtitle(z$`Protein description`)+
+    stat_n_text(vjust=-1)
+  
+  View(z)
 
   p2 <- z %>%
     ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
     geom_boxplot()+
     facet_wrap(~bin)+
-    stat_n_text(vjust=-1) 
+    stat_n_text(vjust=-1)
 
-  # both <- ggarrange(
-  #   p1,p2,ncol=2)
+  both <- ggarrange(
+    p1,p2,ncol=2)
 
-  plot(p2)
+  plot(p1)
 
 }
 dev.off()
