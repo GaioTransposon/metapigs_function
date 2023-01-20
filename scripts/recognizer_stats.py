@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Created on Wed Jan 18 15:00:00 2023
 
-This is a temporary script file.
+@author: dgaio
 """
 
 
@@ -12,17 +13,18 @@ import pandas as pd
 from scipy import stats
 import time
 import os
+import csv
 
 # run example: 
 # python recognizer_stats.py /Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results t2 t8       #local UZH   
 # python recognizer_stats.py /shared/homes/152324/contigs/prodigal/reCOGnizer_results t2 t8       #UTS HPC
 
+
+# running time for all subjects: 2.5h 
+
 mypath=sys.argv[1]   
 t_before=sys.argv[2]
 t_after=sys.argv[3]
-
-
-
 
 
 
@@ -41,7 +43,8 @@ print('analysing time interval between', t_before, 'and', t_after)
 start = time.time()
 
 
-
+# list to add unique (hit) proteins from all subjects 
+proteins_big=[]
 
 
 
@@ -60,6 +63,7 @@ for my_dir in os.listdir(mypath):
         
         # selecting rows based on condition 
         recognizer_sub = recognizer[recognizer['date'].isin(intervals)] 
+    
 
         # split by Protein DB
         rec = recognizer_sub.groupby('DB description')    
@@ -128,7 +132,16 @@ for my_dir in os.listdir(mypath):
             
             shifts.append(shift)
             proteins.append(name)
-            pvalues.append(pval)            
+            pvalues.append(pval)     
+            
+            ##########
+            # save proteins into list if not already present: 
+            if name not in proteins_big:
+                proteins_big.append(name)
+            else:
+                pass
+            ##########            
+            
                     
         if len(proteins)==down_zeros:
             
@@ -152,13 +165,30 @@ for my_dir in os.listdir(mypath):
             name_of_file=mypath+"/"+my_dir+"/"+mysample+"_reCOGnizer_hits_"+t_before+"_vs_"+t_after+".tsv"
             hits.to_csv(name_of_file, index=False, sep="\t") 
             
+            
             print("Filtering and writing done")
                 
     else:
                 
         pass
-                
+
+
+
+len(proteins_big)
             
+# save proteins_big (list of proteins containing all unique hits among all the subjects)
+name_of_file=mypath+"/all_proteins_hits_"+t_before+"_vs_"+t_after+".txt"
+
+
+
+file = open(name_of_file,'w')
+for item in proteins_big:
+	file.write(item+"\t")
+file.close()
+    
+    
+    
+    
 
 end = time.time()
 print("Running time: ", end-start)	

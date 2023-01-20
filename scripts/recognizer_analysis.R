@@ -198,3 +198,53 @@ View(xx)
 # # for example: 
 # # cat reCOGnizer_results_eval_filtered.csv | grep -w "GH25" | cut -f 6 | head
 
+
+
+
+
+
+t2_t8 <- read_delim("~/Desktop/contigs/prodigal/reCOGnizer_results/t2_t8", 
+                    delim = "\t", escape_double = FALSE, trim_ws = TRUE)
+
+
+
+x <- t2_t8 %>%
+  group_by(protein,shift) %>%
+  tally()
+View(x)
+
+colnames(df1)
+df1 %>%
+  dplyr::filter(`DB description`=="Uncharacterized conserved protein related to pyruvate formate-lyase activating enzyme  [Function unknown].") %>%
+  dplyr::select(`species`) %>%
+  group_by(species) %>%
+  tally()
+
+
+t2_t8 %>%
+  dplyr::filter(protein=="Uncharacterized conserved protein related to pyruvate formate-lyase activating enzyme  [Function unknown].") %>%
+  group_by(shift) %>%
+  tally() 
+
+
+df1 %>%
+  dplyr::filter(`DB description`=="Uncharacterized conserved protein related to pyruvate formate-lyase activating enzyme  [Function unknown].") %>%
+  ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+  geom_boxplot()+
+  facet_wrap(~bin)+
+  stat_n_text(vjust=-1) 
+
+
+t2_t8 %>%
+  dplyr::select(protein) %>%
+  distinct()
+
+df1 %>%
+  dplyr::select(`DB description`) %>%
+  distinct()
+  
+
+
+
+
+
