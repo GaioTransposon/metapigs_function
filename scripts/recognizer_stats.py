@@ -29,25 +29,20 @@ t_before=sys.argv[2]
 t_after=sys.argv[3]
 
 
-
-
-mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
-t_before="t2"
-t_after="t8"
+# mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
+# t_before="t2"
+# t_after="t8"
 
 print(mypath)
 print('analysing time interval between', t_before, 'and', t_after)
 
 
-
-
-
 start = time.time()
 
-
-# list to add unique (hit) proteins from all subjects 
+# list to add subjects who have the requested time intervals info 
+subjects=[]
+# list to add unique (hit) proteins (among all subjects) for which a significant dif was found between time intervals 
 proteins_big=[]
-
 
 
 for my_dir in os.listdir(mypath):
@@ -55,27 +50,31 @@ for my_dir in os.listdir(mypath):
     if my_dir.endswith(".faa"):
 
         mysample = my_dir.replace(".faa", "")
-        #print(mysample)
+        
         recognizer=mypath+'/'+my_dir+'/'+mysample+'_reCOGnizer_results_eval_filtered_final.csv'
         
         # read in 
-        recognizer = pd.read_csv(recognizer)
+        recognizer = pd.read_csv(recognizer, index_col=None)
         
         
-        # if no info on later time point, don't continue:
+        # if no info on later time point, skip analysis :
         check_if_any = recognizer[recognizer["date"] == t_after]
         if len(check_if_any)==0:
             
-            print("subject ", mysample, " was not sampled at the later time point")
-        
+            print("\n\nsubject ", "{:<20}".format(mysample), " excluded, as it was NOT sampled at the requested time points")
+            
         
         # else proceed calculating shifts 
         else: 
+            
+            print("\n\nsubject ", "{:<20}".format(mysample), " included")
+            
+            subjects.append(mysample)
 
             # filter by two args (dates)
             intervals = [t_before, t_after] 
             
-            # selecting rows based on condition 
+            # selecting rows based on time intervals requested  
             recognizer_sub = recognizer[recognizer['date'].isin(intervals)] 
     
             # split by Protein DB
@@ -83,11 +82,8 @@ for my_dir in os.listdir(mypath):
             [rec.get_group(x) for x in rec.groups]
             
     
-            shifts=[]
             proteins=[]
             pvalues=[]
-
-    
 
             for name,df in rec:
     
@@ -96,71 +92,133 @@ for my_dir in os.listdir(mypath):
                 #print(len(df))
             
                 a=df[df["date"]==t_before].norm_mapped_wa
-                b=df[df["date"]==t_after].norm_mapped_wa
+                b=df[df["date"]==t_after].norm_mapped_wa                        
                 
-                
-                try:
-                    
-                    fc=(np.mean(b)-np.mean(a))/np.mean(a)
-                    
-                except ZeroDivisionError:
-                    
-                    
-                    if np.mean(a)>np.mean(b):
-                        
-                        #print("to zero")
-                        fc=float("NaN")
-                        
-                    elif np.mean(a)<np.mean(b):
-                        
-                        #print("from zero")
-                        fc=float("NaN")
-                        
-                    else:
-                        
-                        #print("zeros")
-                        fc=0
-                        
-
                 s,pval=stats.ttest_ind(a, b)
-                #s,pval=scipy.stats.mannwhitneyu(a,b)
-                #s,pval = scipy.stats.kruskal(a,b)
-                
-    
-                shifts.append(fc)
+
+                # if using other tests: 
+                #try: 
+                    #s,pval = scipy.stats.kruskal(a,b)    # or mannwhitney: s,pval=scipy.stats.mannwhitneyu(a,b)
+                #except ValueError: 
+                    #print("ValueError - All numbers are identical in kruskal")
+
                 proteins.append(name)
-                pvalues.append(pval)     
-                len(shifts)
-                len(proteins)
-                len(pvalues)
+                pvalues.append(pval)   
             
 
-            
             # save results map 
-            results = pd.DataFrame(np.column_stack([proteins, pvalues, shifts]), 
-                                            columns=['protein', 'pvalue', 'shift'])
+            results = pd.DataFrame(np.column_stack([proteins, pvalues]), 
+                                            columns=['protein', 'pvalue'])
             
             results['pvalue'] = results['pvalue'].astype(float)
             
-
-            # filter p<0.05
+            # filter significant hits: 
             hits = results[results['pvalue'] <= 0.05] 
             
+            
+            print("Filtering done; number of hits found: ", len(hits))
+            
+            
             ##########
-            # save names of proteins that were found significantly changed between time points, in list (if not already present) 
+            # save names of proteins that were found significantly changed between time intervals, in list (if not already present) 
             for p in hits['protein']:
                 if p not in proteins_big:
                     proteins_big.append(p)
                 else:
                     pass
             ##########  
+            
+            print("Proteins of interest added to list")
+                
+    else:
+                
+        pass
 
-            # write 
-            name_of_file=mypath+"/"+my_dir+"/"+mysample+"_reCOGnizer_hits_"+t_before+"_vs_"+t_after+".tsv"
-            hits.to_csv(name_of_file, index=False, sep="\t") 
+
+end = time.time()
+print("PART 1 completed ")
+print("Running time: ", end-start)
+
+            
+print("total number of unique proteins we filtered recognizer results on: ", len(proteins_big))
+
+# # write POI
+# name_of_file=mypath+"/reCOGnizer_POI_"+t_before+"_vs_"+t_after
+# with open(name_of_file, 'w') as fp:
+#     fp.write('\n'.join(proteins_big))
+    
+    
+start = time.time() 
+
+
+df_nan=[]
+df_poorly_characterized=[]
+df_cellular_processes_and_signaling=[]
+df_information_storage_and_processing=[]
+df_metabolism=[]
+df_other=[]
+
+for my_dir in os.listdir(mypath):
+    
+    if my_dir.endswith(".faa"):
+
+        mysample = my_dir.replace(".faa", "")
+        
+        if mysample in subjects:
+            
+            recognizer=mypath+'/'+my_dir+'/'+mysample+'_reCOGnizer_results_eval_filtered_final.csv'
+            
+            # read in 
+            recognizer = pd.read_csv(recognizer, index_col=None)
+            
+            print("\n\nfiltering dataframe for subject: ", mysample)
+            
+            # filter by two args (dates)
+            intervals = [t_before, t_after] 
+            
+            # selecting rows based on time intervals requested  
+            recognizer_sub1 = recognizer[recognizer['date'].isin(intervals)] 
+            
+            # subset based on proteins of interest: 
+            recognizer_sub2 = recognizer_sub1[recognizer_sub1['DB description'].isin(proteins_big)] 
+            
+            # remove unnecessary column 
+            recognizer_sub2.pop('index')
+            
+
+            #add dataframe to list of dataframes based on general function: 
+            gf_grouped = recognizer_sub2.groupby('General functional category')    
+            [gf_grouped.get_group(x) for x in gf_grouped.groups]
             
             
-            print("Filtering and writing done")
+            
+            for name,df in gf_grouped:
+    
+                #print("\t")
+                #print(name)
+                #print(len(df))
+                #print(df)
+
+                if name=="nan":
+                    df_nan.append(df)
+                    
+                elif name=="METABOLISM":
+                    df_metabolism.append(df)
+                    
+                elif name=='CELLULAR PROCESSES AND SIGNALING':
+                    df_cellular_processes_and_signaling.append(df)         
+
+                elif name=="INFORMATION STORAGE AND PROCESSING":
+                    df_information_storage_and_processing.append(df)
+                    
+                elif name=='POORLY CHARACTERIZED':
+                    df_poorly_characterized.append(df)
+                    
+                else: 
+                    df_other.append(df)
+      
+
+                print("df from ", mysample, "saved to ", name)
                 
     else:
                 
@@ -168,22 +226,75 @@ for my_dir in os.listdir(mypath):
 
 
 
-len(proteins_big)
 
-            
-# save proteins_big (list of proteins containing all unique hits among all the subjects)
-name_of_file=mypath+"/all_proteins_hits_"+t_before+"_vs_"+t_after+".tsv"
-# file = open(name_of_file,'w')
-# for item in proteins_big:
-# 	file.write(item+"\t")
-# file.close()
+# write 
+def conc_and_save(some_list_of_dataframes):
     
+    if len(some_list_of_dataframes)!=0:
+        gen_fun=some_list_of_dataframes[0]
+        gen_fun=gen_fun['General functional category'].unique()[0]
+        gen_fun=gen_fun.replace(" ","_")
+        name_of_file=mypath+"/reCOGnizer_POI_"+gen_fun+"_"+t_before+"_vs_"+t_after+".csv"
+        df_concatenated = pd.concat(some_list_of_dataframes)
+        df_concatenated.to_csv(name_of_file, index=False) 
+        print(gen_fun, " written.")
+        
+    else: 
+        print("General function empty - not writing it")
+        
     
-    
-    
+
+conc_and_save(df_nan)
+conc_and_save(df_metabolism)
+conc_and_save(df_cellular_processes_and_signaling)
+conc_and_save(df_information_storage_and_processing)
+conc_and_save(df_poorly_characterized)
+conc_and_save(df_other)
+
 
 end = time.time()
-print("Running time: ", end-start)	
+print("PART 2 completed ")
+print("Running time: ", end-start)
+
+
+   
+    
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+	
 
 
 
