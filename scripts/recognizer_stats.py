@@ -184,18 +184,21 @@ for my_dir in os.listdir(mypath):
             
             # remove unnecessary column 
             recognizer_sub2.pop('index')
+
             
+            # make sure uncategorized (NaN) are taken along, replace NaN value to "NONE"
+            recognizer_sub2[['General functional category']] = recognizer_sub2[['General functional category']].fillna('NONE')
+
 
             #add dataframe to list of dataframes based on general function: 
             gf_grouped = recognizer_sub2.groupby('General functional category')    
             [gf_grouped.get_group(x) for x in gf_grouped.groups]
             
             
-            
             for name,df in gf_grouped:
     
                 #print("\t")
-                #print(name)
+                print(name)
                 #print(len(df))
                 #print(df)
 
@@ -238,7 +241,6 @@ def conc_and_save(some_list_of_dataframes):
         df_concatenated = pd.concat(some_list_of_dataframes)
         df_concatenated.to_csv(name_of_file, index=False) 
         print(gen_fun, " written.")
-        
     else: 
         print("General function empty - not writing it")
         
