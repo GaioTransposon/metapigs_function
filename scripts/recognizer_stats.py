@@ -77,8 +77,8 @@ for my_dir in os.listdir(mypath):
             # selecting rows based on time intervals requested  
             recognizer_sub = recognizer[recognizer['date'].isin(intervals)] 
     
-            # split by Protein DB
-            rec = recognizer_sub.groupby('DB description')    
+            # split by CDDID (Conserved Domain Database ID)
+            rec = recognizer_sub.groupby('CDD ID')    
             [rec.get_group(x) for x in rec.groups]
             
     
@@ -87,9 +87,9 @@ for my_dir in os.listdir(mypath):
 
             for name,df in rec:
     
-                #print("\t")
-                #print(name)
-                #print(len(df))
+                print("\t")
+                print(name)
+                print(len(df))
             
                 a=df[df["date"]==t_before].norm_mapped_wa
                 b=df[df["date"]==t_after].norm_mapped_wa                        
@@ -180,7 +180,7 @@ for my_dir in os.listdir(mypath):
             recognizer_sub1 = recognizer[recognizer['date'].isin(intervals)] 
             
             # subset based on proteins of interest: 
-            recognizer_sub2 = recognizer_sub1[recognizer_sub1['DB description'].isin(proteins_big)] 
+            recognizer_sub2 = recognizer_sub1[recognizer_sub1['CDD ID'].isin(proteins_big)] 
             
             # remove unnecessary column 
             recognizer_sub2.pop('index')
@@ -198,7 +198,7 @@ for my_dir in os.listdir(mypath):
             for name,df in gf_grouped:
     
                 #print("\t")
-                print(name)
+                #print(name)
                 #print(len(df))
                 #print(df)
 

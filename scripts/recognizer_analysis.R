@@ -246,5 +246,22 @@ df1 %>%
 
 
 
+library(dplyr)
+rec <- read_delim("Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/reCOGnizer_results.tsv", 
+                                 delim = "\t", escape_double = FALSE, trim_ws = TRUE)
+
+View(rec)
+recc <- rec %>%
+  group_by(`DB ID`,`CDD ID`) %>%
+  tally() %>%
+  arrange(desc(n))
+View(recc)
+
+rec %>%
+  group_by(`CDD ID`) %>%
+  distinct() %>%
+  tally() %>%
+  dplyr::arrange(desc(n))
+
 
 
