@@ -261,43 +261,107 @@ print("Running time: ", end-start)
 
    
     
-    
-    
+start = time.time()
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-	
+# dictionary to collect files 
+files={}
 
+for my_file in os.listdir(mypath):
+    
+    if my_file.endswith(".csv"):
+        
+        # here I am excluding the output files of the next for loop
+        if my_file.endswith("significant.csv"):
+            
+            pass
+        
+        else: 
+        
+            # create key of dictionary without assigning value yet
+            files[my_file]=None
+            
+            # get time intervals 
+            to_split=my_file.split("_")
+            t_after=to_split[-1].split(".")[0]
+            t_before=to_split[-3]
+            
+            # assign values: time intervals 
+            files[my_file]=[t_before,t_after]
+        
+    else:
+        pass
+    
+for f in  files: 
+    
+    print(f)
+    
+    t_before=files.get(f)[0]
+    t_after=files.get(f)[1]
+    
+    # read in 
+    fpath=mypath+"/"+f
+    rec1 = pd.read_csv(fpath, index_col=None)
+    
+    # proceed calculating shifts 
+    
+    # split by CDD ID (Conserved Domain Database ID)
+    rec = rec1.groupby('CDD ID')    
+    [rec.get_group(x) for x in rec.groups]
+    
+    proteins=[]
+    pvalues=[]
+    h_statistics=[]
+    
+    n_tests=0
+    for name,df in rec:
+        
+        n_tests+=1
+
+        #print("\t")
+        #print(name)
+        #print(len(df))
+    
+        a=df[df["date"]==t_before].norm_mapped_wa
+        b=df[df["date"]==t_after].norm_mapped_wa                        
+        
+        h,pval=scipy.stats.kruskal(a,b)
+
+        proteins.append(name)
+        pvalues.append(pval)   
+        h_statistics.append(h)
+
+    # save results map 
+    results = pd.DataFrame(np.column_stack([proteins, pvalues, h_statistics]), 
+                           columns=['CDD ID', 'pvalue', 'h_statistic'])
+        
+    results['pvalue'] = results['pvalue'].astype(float)
+
+    # Multiple testing correction with Bonferroni:
+    bonferroni_threshold=0.05/n_tests   
+    # filter significant hits: 
+    hits = results[results['pvalue'] <= bonferroni_threshold] 
+    print("Filtering done; number of hits found: ", len(hits))
+        
+    # sort by h statistic 
+    hits.sort_values('h_statistic', ascending=False)
+
+    # subset original dataframe based on significant proteins and plot:
+    final=pd.merge(rec1, hits, on='CDD ID')
+    
+    # write
+    new_file_name=f.replace(".csv","_significant.csv")
+    new_file_name=mypath+"/"+new_file_name
+    final.to_csv(new_file_name, index=False) 
+
+    print('writing done')
+                
+
+    
+end = time.time()
+print("PART 3 completed ")
+print("Running time: ", end-start)
+    
 
 
 
