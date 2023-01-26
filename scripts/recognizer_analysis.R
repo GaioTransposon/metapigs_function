@@ -5,263 +5,264 @@ library(ggpubr)
 library(EnvStats)
 library(purrr)
 library(data.table)
+library(tidyverse)
 
-start_time <- Sys.time()
+# pass path as argument of script 
+my_path="Desktop/contigs/prodigal/reCOGnizer_results/"
+#my_path="/shared/homes/152324/contigs/prodigal/reCOGnizer_results/"
 
-df <- read_csv("/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/14159_reCOGnizer_results_eval_filtered_final.csv")
+these_files <- list.files(path = my_path, pattern="significant.csv")
 
-# # reorder dates 
-# df$date  = factor(df$date, levels=c("t0",
-#                                     "t1", 
-#                                     "t2",
-#                                     "t3",
-#                                     "t4",
-#                                     "t5",
-#                                     "t6",
-#                                     "t7",
-#                                     "t8",
-#                                     "t9",
-#                                     "t10"))
+#these_files<-these_files[1:2]
 
-df0 <- df %>%
-  dplyr::filter(date=="t2"|date=="t8")
+for (f in these_files) {
+  
+  f_path=paste0(my_path,f)
+  df <- read_csv(f_path)
+  
+  fname_new=str_replace(f, ".csv","_")
+  fnew_path=paste0(my_path,fname_new)
+  
+  to_plot <- split( df , f = df$`CDD ID` )
+  #NROW(to_plot)
+  
+  # splitting every 100 to print new pdf every 100 plots 
+  seqq <- seq(from = 1, to = NROW(to_plot), by = 1)
+  my_groups <- split(seqq, ceiling(seq_along(seqq)/100))
+  
+  counter=0
+  for (i in my_groups) {
+    
+    counter=counter+1
+    pdf_name=paste0(fnew_path,counter,'.pdf')
+    
+    # print new pdf every 100 plots 
+    pdf(pdf_name)
+    for (ii in i) {
+      
+      z <- to_plot[ii]
+      z <- do.call(rbind.data.frame, z)
+      funct_cat=as.character(z$`Functional category`[1])
+      protein=as.character(z$`DB description`[1])
+      CDD=as.character(z$`CDD ID`[1])
+      
+      n_pigs=z %>%
+        dplyr::select(pig) %>%
+        distinct() %>%
+        tally()
+      n_species=z %>%
+        dplyr::select(species) %>%
+        distinct() %>%
+        tally()
+      
+      p1 <- z %>%
+        ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+        geom_boxplot()+
+        labs(title = name,
+             subtitle = paste0(CDD,"_",funct_cat),
+             caption = as.character(paste0("tot# subjects:",n_pigs,
+                                           "\ntot# species:",n_species-1))) + # min 1 because otherwise NA is counted
+        stat_n_text(vjust=-1)+
+        theme(title = element_text(size=5))
+      
+      # top 10 species and plot 
+      these_species <- z %>%
+        group_by(species) %>%
+        tally() %>%
+        dplyr::mutate(perc=round(n/sum(n)*100,2)) %>%
+        dplyr::arrange(desc(perc)) %>%
+        head(10)
+      
+      z_sub <- inner_join(these_species,z)
+      z_sub$species_perc=paste0(z_sub$species,"\n",z_sub$perc)
+      
+      # order the facets by number of species carrying the protein 
+      p2 <- z_sub %>%
+        ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+        geom_boxplot()+
+        facet_wrap(~factor(species_perc, levels=unique(z_sub$species_perc)))+
+        labs(title = z_sub$perc[0]) +
+        theme(strip.text = element_text(size=5))
+      
+      both <- ggarrange(
+        p1,p2,ncol=2)
+      
+      plot(both)
+      
+    }
+    
+    dev.off()
+  }
+  
+  
+  
+}
 
-df1 <- df0 #%>% 
-  #dplyr::filter(`Functional category`=="Carbohydrate transport and metabolism")
 
-# fam <- df1 %>%
-#   group_by(`DB DB`) %>%
+
+
+
+
+
+
+
+
+
+
+
+# #Pdf
+# pdf('/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/test.pdf')
+# #Loop
+# for (i in 1:NROW(to_plot_sub)){
+#   
+#   z <- to_plot_sub[i]
+#   z <- do.call(rbind.data.frame, z)
+#   funct_cat=as.character(z$`Functional category`[1])
+#   protein=as.character(z$`DB description`[1])
+#   CDD=as.character(z$`CDD ID`[1])
+#   
+#   n_pigs=z %>%
+#     dplyr::select(pig) %>%
+#     distinct() %>%
+#     tally()
+#   n_species=z %>%
+#     dplyr::select(species) %>%
+#     distinct() %>%
+#     tally()
+# 
+#   p1 <- z %>%
+#     ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+#     geom_boxplot()+
+#     labs(title = name,
+#          subtitle = paste0(CDD,"_",funct_cat),
+#          caption = as.character(paste0("tot# subjects:",n_pigs,
+#                                        "\ntot# species:",n_species-1))) + # min 1 because NA otherwise is counted
+#     stat_n_text(vjust=-1)+
+#     theme(title = element_text(size=5))
+#   
+#   # top 10 species and plot 
+#   these_species <- z %>%
+#     group_by(species) %>%
+#     tally() %>%
+#     dplyr::mutate(perc=round(n/sum(n)*100,2)) %>%
+#     dplyr::arrange(desc(perc)) %>%
+#     head(10)
+#   
+#   z_sub <- inner_join(these_species,z)
+#   z_sub$species_perc=paste0(z_sub$species,"\n",z_sub$perc)
+# 
+#   # order the facets by number of species carrying the protein 
+#   p2 <- z_sub %>%
+#     ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+#     geom_boxplot()+
+#     facet_wrap(~factor(species_perc, levels=unique(z_sub$species_perc)))+
+#     labs(title = z_sub$perc[0]) +
+#     theme(strip.text = element_text(size=5))
+#   
+#   both <- ggarrange(
+#     p1,p2,ncol=2)
+# 
+#   plot(both)
+# 
+# }
+# dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+# 
+# pdf("/shared/homes/152324/contigs/prodigal/reCOGnizer_results/test2.pdf")
+# recc %>%
+#   dplyr::filter(h_statistic>500) %>%
+#   #group_by(`CDD ID`) %>%
+#   #tally()
+#   group_by(pig, `CDD ID`, date) %>%
+#   dplyr::summarise(tot = median(norm_mapped_wa, na.rm = TRUE)) %>%
+#   group_by(`CDD ID`) %>%
+#   dplyr::mutate(tot = tot/max(tot)) %>%
+#   ungroup() %>%
+#   ggplot(aes(x = factor(pig), y = reorder(`CDD ID`, tot, FUN = median), fill = tot)) +
+#   geom_tile() +
+#   scale_fill_distiller(type = "div", palette = "RdBu") +
+#   facet_grid(~date, scales = "free") +
+#   labs(x = "date", y = "CDD ID", fill = "normalized abundance")+
+#   theme(axis.text.x=element_blank(),
+#         axis.title.x=element_blank(),
+#         legend.position="top")
+# dev.off()
+# 
+# rec %>% 
+#   dplyr::filter(h_statistic>100) %>%  #500
+#   dplyr::select(`CDD ID`) %>%
+#   distinct() %>%
+#   tally()
+#   
+# 
+# recc <- rec %>% 
+#   dplyr::filter(h_statistic>100)
+# 
+# recc$pig_date=paste(recc$date, recc$pig, sep="_")
+# 
+# reccc <- recc %>%
+#   group_by(pig_date,`CDD ID`) %>%
+#   summarise(sum=sum(norm_mapped_wa)) %>%
+#   pivot_wider(names_from = pig_date,values_from=sum) 
+# 
+# reccc <- as.data.frame(reccc)
+# rownames(reccc) <- reccc$`CDD ID`  
+# reccc$`CDD ID` <- NULL
+# 
+# ord=list("t0","t0","t0","t10","t10","t10")
+# 
+# 
+# 
+# library("gplots")
+# heatmap.2(reccc, scale = "none", col = bluered(100), 
+#           trace = "none", density.info = "none")
+# 
+# 
+# 
+# pdf("/shared/homes/152324/contigs/prodigal/reCOGnizer_results/test.pdf")
+# pheatmap(reccc,clustering_distance_rows = "euclidean", cutree_rows = 8)  #scale="row" 
+# pheatmap(reccc,clustering_distance_rows = "manhattan", scale="row", annotation_col = ord)  #scale="row" 
+# pheatmap(reccc,clustering_distance_rows = "canberra")  #scale="row" 
+# pheatmap(reccc,cluster_cols=FALSE,cluster_rows=TRUE)
+# dev.off()
+# 
+# recc %>% 
+#   dplyr::filter(`CDD ID`=="CDD:225343") %>%
+#   ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+#   geom_boxplot()+
+#   stat_n_text(vjust=-1) +
+#   facet_wrap(~pig) +
+#   ggtitle(recc$`DB description`[1])
+# 
+# recc %>% 
+#   dplyr::filter(`CDD ID`=="CDD:225343") %>%
+#   group_by(species,pig) %>%
 #   tally() %>%
 #   arrange(desc(n))
 # 
-# test1=df1 %>%
-#   dplyr::select(`Protein DB`)
-# NROW(which(is.na(test1)))
-# test2=df1 %>%
-#   dplyr::select(`DB DB`)
-# NROW(which(is.na(test2)))
-
-# for each unique protein (based on Protein DB), check which ones are significantly diff (ab) between dates 
-out <- split( df1 , f = df1$`DB description` )
-
-#res <- map(out, ~kruskal.test(norm_mapped_wa ~ date, data = .)) 
-res <- map(out, ~wilcox.test(norm_mapped_wa ~ date, data = .)) 
-
-pval <- sapply(res, "[", "p.value")
-
-# to df
-y <- stack(pval)
-y <- y %>%
-  dplyr::filter(values<0.05)
-
-y$ind=gsub(".p.value*","",y$ind)
-
-# y<-as.list(y$ind)
-# class(y)
+# View(recc)
 # 
-NROW(y)
-# y
-View(y)
-
-
-# save results 
-fwrite(y,"/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/14159_reCOGnizer_hits_R.tsv", sep = "\t")
-
-end_time <- Sys.time()
-end_time-start_time
-
-
-
-z <- as.data.frame(X14159_reCOGnizer_hits_py)
-colnames(z) <- c("ind","values")
-z <- z %>% dplyr::select(values,ind)
-
-View(y)
-View(z)
-
-class(z$values)
-
-zz <- anti_join(y,z,by = c("ind"))
-
-NROW(zz)
-View(zz)
-
-
-
-
-
-
-
-z[1,]==y[1,]
-
-y %>% dplyr::filter(ind=="")
-z %>% dplyr::filter(ind=="PTS sugar transporter subunit IIC.")
-
-
-
-
-
-
-
-# run through list of signif results
-df1_sig <- subset(df1, (`Protein DB` %in% y))
-
-to_plot <- split( df1_sig , f = df1_sig$`Protein DB` )
-NROW(to_plot)
-
-
-#to_plot <- to_plot[1:3]
-
-
-#Pdf
-pdf('/Users/dgaio/Desktop/contigs/Example_carb.pdf')
-#Loop
-for (i in 1:39){
-  
-  z <- to_plot[30]
-
-  z <- do.call(rbind.data.frame, z)
-
-  p1 <- z %>%
-    ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-    geom_boxplot()+
-    ggtitle(z$`Protein DB`)+
-    stat_n_text(vjust=-1)
-  
-  View(z)
-
-  p2 <- z %>%
-    ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-    geom_boxplot()+
-    facet_wrap(~bin)+
-    stat_n_text(vjust=-1)
-
-  both <- ggarrange(
-    p1,p2,ncol=2)
-
-  plot(p1)
-
-}
-dev.off()
-
-
-View(df1)
-
-test <- df1 %>%
-  dplyr::filter(`DB description`=='2 3 bisphosphoglycerate independent phosphoglycerate mutase iPGM. The 2,3-diphosphoglycerate- independent phosphoglycerate mutase (iPGM) catalyzes the interconversion of 3-phosphoglycerate (3PGA) and 2-phosphoglycerate (2PGA). They are the predominant PGM in plants and some other bacteria, including endospore forming Gram-positive bacteria and their close relatives. The two steps catalysis is a phosphatase reaction removing the phosphate from 2- or 3-phosphoglycerate, generating an enzyme-bound phosphoserine intermediate, followed by a phosphotransferase reaction as the phosphate is transferred from the enzyme back to the glycerate moiety. The iPGM exists as a dimer, each monomer binding 2 magnesium atoms, which are essential for enzymatic activity.')
-
-View(test)
-
-
-
-
-z <- to_plot[47]
-
-z <- do.call(rbind.data.frame, z)
-
-p1 <- z %>%
-  ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-  geom_boxplot()+
-  ggtitle(z$`Protein DB`)+
-  stat_n_text(vjust=-1) 
-
-p2 <- z %>%
-  ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-  geom_boxplot()+
-  ggtitle(z$species)+
-  facet_wrap(~bin)+
-  stat_n_text(vjust=-1) 
-
-both <- ggarrange(
-  p1,p2,ncol=2)
-
-z$species
-xx <- z %>%
-  dplyr::select(species,norm_mapped_wa,bin)
-View(xx)
-
-################################################################################
-
-# # Connection dbcan with new data - for discussion in manuscript: 
-# # Take along all significant hits from dbcan (differentially represented CAZy between timepoints). 
-# # Save enzyme IDs to a list. Search the recognizer_results files for items of this list 
-# # and see what `Protein DB` they correspond to. Do we see the same/similar trends? 
-#   
-# library(openxlsx)
-# dbcan = read.xlsx("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8549361/bin/mgen-7-0501-s002.xlsx",sheet=2)
-# dbcan %>% dplyr::filter(p_value<=0.05) %>%
-#   dplyr::select(enzID) %>%
+# ec <- recc %>%
+#   dplyr::select(`EC number`) %>%
 #   distinct()
-# # save as list
-# 
-# # go through reCOGnizer_results_eval_filtered.csv files and grep each item 
-# # for example: 
-# # cat reCOGnizer_results_eval_filtered.csv | grep -w "GH25" | cut -f 6 | head
-
-
-
-
-
-
-t2_t8 <- read_delim("~/Desktop/contigs/prodigal/reCOGnizer_results/t2_t8", 
-                    delim = "\t", escape_double = FALSE, trim_ws = TRUE)
-
-
-
-x <- t2_t8 %>%
-  group_by(protein,shift) %>%
-  tally()
-View(x)
-
-colnames(df1)
-df1 %>%
-  dplyr::filter(`DB description`=="Uncharacterized conserved protein related to pyruvate formate-lyase activating enzyme  [Function unknown].") %>%
-  dplyr::select(`species`) %>%
-  group_by(species) %>%
-  tally()
-
-
-t2_t8 %>%
-  dplyr::filter(protein=="Uncharacterized conserved protein related to pyruvate formate-lyase activating enzyme  [Function unknown].") %>%
-  group_by(shift) %>%
-  tally() 
-
-
-df1 %>%
-  dplyr::filter(`DB description`=="Uncharacterized conserved protein related to pyruvate formate-lyase activating enzyme  [Function unknown].") %>%
-  ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
-  geom_boxplot()+
-  facet_wrap(~bin)+
-  stat_n_text(vjust=-1) 
-
-
-t2_t8 %>%
-  dplyr::select(protein) %>%
-  distinct()
-
-df1 %>%
-  dplyr::select(`DB description`) %>%
-  distinct()
-  
-
-
-
-library(dplyr)
-rec <- read_delim("Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/reCOGnizer_results.tsv", 
-                                 delim = "\t", escape_double = FALSE, trim_ws = TRUE)
-
-View(rec)
-recc <- rec %>%
-  group_by(`DB ID`,`CDD ID`) %>%
-  tally() %>%
-  arrange(desc(n))
-View(recc)
-
-rec %>%
-  group_by(`CDD ID`) %>%
-  distinct() %>%
-  tally() %>%
-  dplyr::arrange(desc(n))
-
-
-
+# View(ec)
+# getwd()
+# write.table(ec, file = "ec.txt", sep = " ", row.names = FALSE, quote=FALSE)

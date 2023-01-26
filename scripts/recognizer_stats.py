@@ -29,9 +29,9 @@ t_before=sys.argv[2]
 t_after=sys.argv[3]
 
 
-# mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
-# t_before="t2"
-# t_after="t8"
+mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
+t_before="t2"
+t_after="t8"
 
 print(mypath)
 print('analysing time interval between', t_before, 'and', t_after)
@@ -87,9 +87,9 @@ for my_dir in os.listdir(mypath):
 
             for name,df in rec:
     
-                print("\t")
-                print(name)
-                print(len(df))
+                #print("\t")
+                #print(name)
+                #print(len(df))
             
                 a=df[df["date"]==t_before].norm_mapped_wa
                 b=df[df["date"]==t_after].norm_mapped_wa                        
