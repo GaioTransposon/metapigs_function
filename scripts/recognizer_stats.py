@@ -28,10 +28,10 @@ mypath=sys.argv[1]
 t_before=sys.argv[2]
 t_after=sys.argv[3]
 
-
-mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
-t_before="t2"
-t_after="t8"
+#mypath="/shared/homes/152324/contigs/prodigal/reCOGnizer_results"
+#mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
+#t_before="t2"
+#t_after="t8"
 
 print(mypath)
 print('analysing time interval between', t_before, 'and', t_after)
@@ -77,7 +77,7 @@ for my_dir in os.listdir(mypath):
             # selecting rows based on time intervals requested  
             recognizer_sub = recognizer[recognizer['date'].isin(intervals)] 
     
-            # split by CDDID (Conserved Domain Database ID)
+            # split by CDD ID (Conserved Domain Database ID)
             rec = recognizer_sub.groupby('CDD ID')    
             [rec.get_group(x) for x in rec.groups]
             
@@ -92,18 +92,23 @@ for my_dir in os.listdir(mypath):
                 #print(len(df))
             
                 a=df[df["date"]==t_before].norm_mapped_wa
-                b=df[df["date"]==t_after].norm_mapped_wa                        
+                b=df[df["date"]==t_after].norm_mapped_wa     
+
+                if len(a)==len(b):
+                    
+                    s,pval=stats.ttest_rel(a, b)
+
+                    # if using other tests: 
+                    #try: 
+                        #s,pval = scipy.stats.kruskal(a,b)    # or mannwhitney: s,pval=scipy.stats.mannwhitneyu(a,b)
+                    #except ValueError: 
+                        #print("ValueError - All numbers are identical in kruskal")
+
+                    proteins.append(name)
+                    pvalues.append(pval)  
                 
-                s,pval=stats.ttest_ind(a, b)
-
-                # if using other tests: 
-                #try: 
-                    #s,pval = scipy.stats.kruskal(a,b)    # or mannwhitney: s,pval=scipy.stats.mannwhitneyu(a,b)
-                #except ValueError: 
-                    #print("ValueError - All numbers are identical in kruskal")
-
-                proteins.append(name)
-                pvalues.append(pval)   
+                else: 
+                    pass
             
 
             # save results map 

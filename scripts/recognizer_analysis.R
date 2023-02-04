@@ -1,3 +1,4 @@
+
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -7,9 +8,11 @@ library(purrr)
 library(data.table)
 library(tidyverse)
 
-# pass path as argument of script 
-my_path="Desktop/contigs/prodigal/reCOGnizer_results/"
-#my_path="/shared/homes/152324/contigs/prodigal/reCOGnizer_results/"
+
+# paths to use: 
+my_path <- paste0(getwd(),"/reCOGnizer_results/") # UTS HPC
+# my_path="Desktop/contigs/prodigal/reCOGnizer_results/"    #local
+print(my_path)
 
 these_files <- list.files(path = my_path, pattern="significant.csv")
 
@@ -58,7 +61,7 @@ for (f in these_files) {
       p1 <- z %>%
         ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
         geom_boxplot()+
-        labs(title = name,
+        labs(title = protein,
              subtitle = paste0(CDD,"_",funct_cat),
              caption = as.character(paste0("tot# subjects:",n_pigs,
                                            "\ntot# species:",n_species-1))) + # min 1 because otherwise NA is counted
@@ -93,8 +96,6 @@ for (f in these_files) {
     
     dev.off()
   }
-  
-  
   
 }
 
@@ -266,3 +267,24 @@ for (f in these_files) {
 # View(ec)
 # getwd()
 # write.table(ec, file = "ec.txt", sep = " ", row.names = FALSE, quote=FALSE)
+
+
+test <- read_csv("Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/test")
+
+test <- test %>%
+  dplyr::filter(date=="t2"|date=="t8") %>%
+  group_by(`EC number`, date) %>%
+  dplyr::mutate(tot=sum(norm_mapped_wa)) %>%
+  dplyr::select(species,genus,date,tot,`EC number`) %>%
+  distinct() %>%
+  pivot_wider(names_from=date,values_from=tot) 
+
+test$mg=1
+
+unique(test$genus)
+
+write_tsv(test,"Desktop/contigs/prodigal/reCOGnizer_results/14159.faa/test.tsv")
+as.character(unique(test$`EC number`))
+
+
+
