@@ -93,7 +93,7 @@ for (f in these_files) {
     for (i in my_groups) {
       
       counter=counter+1
-      pdf_name=paste0(fnew_path,counter,'_subset.pdf')
+      pdf_name=paste0(fnew_path,counter,'_subset_local.pdf')
       
       # print new pdf every 100 plots 
       pdf(pdf_name)
@@ -162,3 +162,32 @@ for (f in these_files) {
   }
 
 }
+
+
+df %>%
+  dplyr::filter(`CDD ID`=="CDD:227155") %>%
+  group_by(date) %>%
+  summarise_at(vars(norm_mapped_wa),
+               list(min=min, Q1=~quantile(., probs = 0.25),
+                    median=median, Q3=~quantile(., probs = 0.75),
+                    max=max))  
+
+library(agrmt)
+a %>%
+  dplyr::filter(`CDD ID`=="CDD:227155") %>%
+  ggplot(., aes(x=date,y=log(norm_mapped_wa))) +
+  geom_boxplot()+
+  stat_n_text(vjust=-1)+
+  theme(title = element_text(size=5))
+
+a <- df %>%
+  dplyr::filter(`CDD ID`=="CDD:227155") %>%
+  group_by(date) %>%
+  dplyr::mutate(norm_mapped_wa=norm_mapped_wa+minnz(norm_mapped_wa)/10)
+View(a)
+
+
+
+
+
+
