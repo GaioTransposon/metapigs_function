@@ -19,6 +19,8 @@ from Bio.Graphics.KGML_vis import KGMLCanvas
 from Bio.Graphics.ColorSpiral import ColorSpiral
 from IPython.display import Image, HTML
 import random
+from colour import Color
+import seaborn as sns
 
 
 
@@ -86,13 +88,41 @@ name_of_file = '/Users/dgaio/Desktop/ec_to_ko.tsv'
 e_ko_df.to_csv(name_of_file, index=False, sep='\t') 
 print('Writing done')
 
+
+##########################################################################
+
+#colors for intervals
+
+# blue - white - red gradient:
+c=sns.mpl_palette("bwr",18)
+
+# visualize it:
+#sns.palplot(sns.mpl_palette("bwr",18))
+
+br=c.as_hex()
+
+cols={}
+n=0
+for i in br:
+    n+=1
+    i=str(i).replace("<Color","")
+    i=str(i).replace(">","")
+    i=i.upper()
+    if i not in cols:
+        cols[n]=i
+    else:
+        pass
+
+colors = pd.DataFrame(cols.items(), columns=['interval', 'color'])
+
+
 ##########################################################################
 
 
 # 2) 
 
 
-rec="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/reCOGnizer_POI_METABOLISM_t2_vs_t8_significant.csv"
+rec="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/reCOGnizer_POI_METABOLISM_t2_vs_t8_significant_major_shift.csv"
 rec = pd.read_csv(rec)
 
 
@@ -112,42 +142,24 @@ for name,df in recc:
     log_fcs.append(log_fc)
     names.append(name)  
     ECs.append(df['EC number'].unique().tolist()[0])
-    
-#counter=0
-my_color = []
-for row in log_fcs:
-    if row < -0.1 : 
-        #counter+=1
-        my_color.append('#FFBFBF')
-    else:           
-        my_color.append('#BFBFFF')
-
 
 # save results map 
 rec = pd.DataFrame(np.column_stack([names, log_fcs, ECs]), 
                          columns=['CDD ID', 'log_fc', 'EC number'])
 
+# produce intervals 
+down=np.linspace(start=min(log_fcs), stop=0, num=10).tolist()
+up=np.linspace(start=0, stop=max(log_fcs), num=10).tolist()
+down_up=down+up
+rec['log_fc']=pd.to_numeric(rec['log_fc'])
+rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', right=True, labels=False)+1 
+
+# merge colors
+rec = pd.merge(colors, rec, on='interval')
 
 
-
-
-from colour import Color
-red = Color("red")
-colors = list(red.range_to(Color("blue"),10))
-
-min(log_fcs)
-max(log_fcs)
-
-
-
-
-name_of_file = '/Users/dgaio/Desktop/rec_df.tsv'
-rec.to_csv(name_of_file, index=False, sep='\t') 
-print('Writing done')
-
-
-rec_e_ko_df = pd.merge(rec, e_ko_df, on='EC number')
-
+# merge KO info 
+rec_e_ko_df = pd.merge(rec, e_ko_df, on='EC number')     
 
 #  write file to Desktop: 
 name_of_file = '/Users/dgaio/Desktop/rec_e_ko_df.tsv'
@@ -158,11 +170,39 @@ print('Writing done')
 ##########################################################################
 
 
+
+pathways = kegg_list('pathway').read()
+
+pathways_list = str.split(pathways, sep="\n")
+
+len(pathways_list)
+
+paths=[]
+descr=[]
+
+for i in pathways_list:
+    i=i.split('\t')
+    print(i)
+    if len(i)>1:
+        i[0]=i[0].replace("path:map","ko")
+        paths.append(i[0])
+        descr.append(i[1])
+    else:
+        pass
+
+print(paths)
+
+paths_df = pd.DataFrame(np.column_stack([paths, descr]), 
+                         columns=['path', 'description'])
+
+
+##########################################################################
+
+
 # 3) 
 
 
 pathway_ko00680 = KGML_parser.read(kegg_get("ko00680", "kgml"))
-
 
 # Render methane metabolism here: 
 # Image(kegg_get("ko00680", "image").read())
@@ -209,10 +249,11 @@ for element in pathway_ko00680_edit.orthologs:
         #print(graphic.bgcolor)
         # if any of these elements are in df, get color. 
         for i in temps:
-            if any(i in sublist for sublist in rec_e_ko_df['KO']):
+            if any(i in sublist for sublist in rec_e_ko_df['KO']):             
                 this_color=rec_e_ko_df.loc[rec_e_ko_df['KO'] == i]['color']
                 this_color=str(this_color).split()[1]
                 graphic.bgcolor=this_color
+                graphic.fgcolor="#FFFF00"
                 print("yes", i, graphic.bgcolor)
             else:
                 graphic.bgcolor="#FFFFFF"
@@ -248,6 +289,7 @@ for element in pathway_ko00270_edit.orthologs:
                 this_color=rec_e_ko_df.loc[rec_e_ko_df['KO'] == i]['color']
                 this_color=str(this_color).split()[1]
                 graphic.bgcolor=this_color
+                graphic.fgcolor="#FFFF00"
                 print("yes", i, graphic.bgcolor)
             else:
                 graphic.bgcolor="#FFFFFF"
@@ -269,46 +311,36 @@ PDF("/Users/dgaio/Desktop/ko00270_edit.pdf")
 
 
 
+pathway_ko00052 = KGML_parser.read(kegg_get("ko00052", "kgml"))
+
+pathway_ko00052_edit=pathway_ko00052
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#User1996
-#New1996
+for element in pathway_ko00052_edit.orthologs:    
+    these_KOs=element.name.split() 
+    temps=[ele.replace('ko:','') for ele in these_KOs]
+    print("#######")
+    print(temps)
+    for graphic in element.graphics:
+        #print(graphic.bgcolor)
+        # if any of these elements are in df, get color. 
+        for i in temps:
+            if any(i in sublist for sublist in rec_e_ko_df['KO']):
+                this_color=rec_e_ko_df.loc[rec_e_ko_df['KO'] == i]['color']
+                this_color=str(this_color).split()[1]
+                graphic.bgcolor=this_color
+                graphic.fgcolor="#FFFF00"
+                print("yes", i, graphic.bgcolor)
+            else:
+                graphic.bgcolor="#FFFFFF"
+                print("no", i, graphic.bgcolor)
+                
+canvas = KGMLCanvas(pathway_ko00052_edit, import_imagemap=True)  # to include lines of the biochemistry 
+canvas.draw("/Users/dgaio/Desktop/ko00052_edit.pdf")
+PDF("/Users/dgaio/Desktop/ko00052_edit.pdf")
 
 
     
-    
-
-
 
 
 
