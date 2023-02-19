@@ -57,9 +57,13 @@ paths_df = pd.DataFrame(np.column_stack([paths, descr]),
 
 # write file of KOs for each path: 
 
+my_dic={}
 for index, row in paths_df.iterrows():
     
     KOs_list=[]
+    
+    # append , as first item, pathways description: 
+    KOs_list.append(row[1])
     
     my_pathway = KGML_parser.read(kegg_get(row['path'], "kgml"))
 
@@ -68,29 +72,28 @@ for index, row in paths_df.iterrows():
         
         for k in these_KOs:
             KOs_list.append(k)
-            
-    df = pd.DataFrame(np.column_stack([KOs_list]), 
-                         columns=['KO'])
     
-    df['description']=row['description']
+    my_dic[row[0]]=KOs_list
+    print(" path number ", index+1, ' - ', row['path'], " saved in dictionary")
     
-    name_of_file = '/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/'+row['path']+'.tsv'
-    df.to_csv(name_of_file, index=False, sep='\t') 
-    print('Writing of path number ', index+1 ,' - ', row['path'], ' done')
+    # # save as well (on HPC)
+    # df = pd.DataFrame(np.column_stack([KOs_list]), 
+    #                      columns=['KO'])
+    # df['description']=row['description']
+    
+    # name_of_file = '/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/'+row['path']+'.tsv'
+    # df.to_csv(name_of_file, index=False, sep='\t') 
+    # print('Writing of path number ', index+1 ,' - ', row['path'], ' done')
     
             
             
 ##########################################################################
 
-        
+       
 
-    
-    
-    
-    
-    
-    
-    
+
+
+
     
     
     
