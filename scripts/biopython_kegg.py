@@ -126,6 +126,52 @@ rec="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/reCOGnizer_POI_MET
 rec = pd.read_csv(rec)
 
 
+
+# merge KO info 
+rec = pd.merge(rec, e_ko_df, on='EC number')    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 recc = rec.groupby('CDD ID')    
 [recc.get_group(x) for x in recc.groups]
 
@@ -157,12 +203,10 @@ rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', right=T
 # merge colors
 rec = pd.merge(colors, rec, on='interval')
 
-
-# merge KO info 
-rec_e_ko_df = pd.merge(rec, e_ko_df, on='EC number')     
+ 
 
 #  write file to Desktop: 
-name_of_file = '/Users/dgaio/Desktop/rec_e_ko_df.tsv'
+name_of_file = '/Users/dgaio/Desktop/rec_e_ko_df_t2_t8.tsv'
 rec_e_ko_df.to_csv(name_of_file, index=False, sep='\t') 
 print('Writing done')
 
@@ -199,7 +243,7 @@ paths_df = pd.DataFrame(np.column_stack([paths, descr]),
 ##########################################################################
 
 
-# 3) 
+# 3) Methane metabolism: 
 
 
 pathway_ko00680 = KGML_parser.read(kegg_get("ko00680", "kgml"))
@@ -236,113 +280,51 @@ PDF("/Users/dgaio/Desktop/ko00680.pdf")
 
 
 
-# 4) 
+# 4) Methane metabolism edited: 
+
 
 pathway_ko00680_edit=pathway_ko00680
-
-for element in pathway_ko00680_edit.orthologs:    
+n=0
+for element in pathway_ko00680_edit.orthologs: #[1:65]:    
     these_KOs=element.name.split() 
     temps=[ele.replace('ko:','') for ele in these_KOs]
     print("#######")
     print(temps)
+    n+=1
+    print(n)
     for graphic in element.graphics:
         #print(graphic.bgcolor)
         # if any of these elements are in df, get color. 
+        
+        bg="#FFFFFF"
+        fg="#FFFFFF"
+        
         for i in temps:
             if any(i in sublist for sublist in rec_e_ko_df['KO']):             
                 this_color=rec_e_ko_df.loc[rec_e_ko_df['KO'] == i]['color']
                 this_color=str(this_color).split()[1]
-                graphic.bgcolor=this_color
-                graphic.fgcolor="#FFFF00"
-                print("yes", i, graphic.bgcolor)
+                bg=this_color
+                fg= "#000000"   # yellow: "#FFFF00"
+                
+                # changing name of box to orthologous gene we have 
+                element.graphics[0].name=i
+                
+                print("yes", i, bg, fg)
             else:
-                graphic.bgcolor="#FFFFFF"
-                print("no", i, graphic.bgcolor)
+                print("no", i)
+                
+        graphic.bgcolor=bg
+        graphic.fgcolor=fg        
+        print(graphic.bgcolor, graphic.fgcolor)
+            
+            
                 
 canvas = KGMLCanvas(pathway_ko00680_edit, import_imagemap=True)  # to include lines of the biochemistry 
 canvas.draw("/Users/dgaio/Desktop/ko00680_edit.pdf")
 PDF("/Users/dgaio/Desktop/ko00680_edit.pdf")
 
 
+
+
 ##########################################################################
-
-
-
-# 5) 
-
-
-pathway_ko00270 = KGML_parser.read(kegg_get("ko00270", "kgml"))
-
-pathway_ko00270_edit=pathway_ko00270
-
-
-for element in pathway_ko00270_edit.orthologs:    
-    these_KOs=element.name.split() 
-    temps=[ele.replace('ko:','') for ele in these_KOs]
-    print("#######")
-    print(temps)
-    for graphic in element.graphics:
-        #print(graphic.bgcolor)
-        # if any of these elements are in df, get color. 
-        for i in temps:
-            if any(i in sublist for sublist in rec_e_ko_df['KO']):
-                this_color=rec_e_ko_df.loc[rec_e_ko_df['KO'] == i]['color']
-                this_color=str(this_color).split()[1]
-                graphic.bgcolor=this_color
-                graphic.fgcolor="#FFFF00"
-                print("yes", i, graphic.bgcolor)
-            else:
-                graphic.bgcolor="#FFFFFF"
-                print("no", i, graphic.bgcolor)
-                
-canvas = KGMLCanvas(pathway_ko00270_edit, import_imagemap=True)  # to include lines of the biochemistry 
-canvas.draw("/Users/dgaio/Desktop/ko00270_edit.pdf")
-PDF("/Users/dgaio/Desktop/ko00270_edit.pdf")
-
-
-
-
-
-
-
-
-
-
-
-
-
-pathway_ko00052 = KGML_parser.read(kegg_get("ko00052", "kgml"))
-
-pathway_ko00052_edit=pathway_ko00052
-
-
-for element in pathway_ko00052_edit.orthologs:    
-    these_KOs=element.name.split() 
-    temps=[ele.replace('ko:','') for ele in these_KOs]
-    print("#######")
-    print(temps)
-    for graphic in element.graphics:
-        #print(graphic.bgcolor)
-        # if any of these elements are in df, get color. 
-        for i in temps:
-            if any(i in sublist for sublist in rec_e_ko_df['KO']):
-                this_color=rec_e_ko_df.loc[rec_e_ko_df['KO'] == i]['color']
-                this_color=str(this_color).split()[1]
-                graphic.bgcolor=this_color
-                graphic.fgcolor="#FFFF00"
-                print("yes", i, graphic.bgcolor)
-            else:
-                graphic.bgcolor="#FFFFFF"
-                print("no", i, graphic.bgcolor)
-                
-canvas = KGMLCanvas(pathway_ko00052_edit, import_imagemap=True)  # to include lines of the biochemistry 
-canvas.draw("/Users/dgaio/Desktop/ko00052_edit.pdf")
-PDF("/Users/dgaio/Desktop/ko00052_edit.pdf")
-
-
-    
-
-
-
-
 
