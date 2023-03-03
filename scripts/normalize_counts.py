@@ -8,9 +8,17 @@ Created on Mon Dec 19 16:44:44 2022
 
 import os
 import pandas as pd
+import glob
 
 
-mypath = input('Please pass path to directory containing files ending with "contig_Counts_parsed_weighted_contigs.csv" \n') 
+mypath="/shared/homes/152324/contigs"
+
+print('this is your path', mypath)
+
+filelist = glob.glob(mypath) 
+
+
+# mypath = input('Please pass path to directory containing files ending with "contig_Counts_parsed_weighted_contigs.csv" \n') 
 # /Users/dgaio/Desktop/contigs     <-- local UZH
 # /shared/homes/152324/contigs     <-- HPC UTS
 
@@ -29,7 +37,7 @@ for file in os.listdir(mypath):
 
 
 for my_key in dictionary: 
-    print(my_key)
+    #print(my_key)
     
     # create empty list to accomodate dataframes
     appended_data=[]
@@ -59,16 +67,22 @@ for my_key in dictionary:
     # concatenate dataframes from the same key (pigID)
     appended_data = pd.concat(appended_data, ignore_index=True)
     
+    # de-duplicate:
+    # some subjects have rarely been sampled twice, e.g. on 7 and 8 feb. 
+    # we take the mean of these lib normalized counts per contig, with the same date:
+    # group by pig,date, and orf, and take the mean: 
+    res = appended_data.groupby(['pig','date', 'bin', 'contig'])['norm_mapped_wa'].mean().reset_index()
+    
+    
     this_name='counts_normalized_'+my_key
     print(this_name)
     
     # write to file
-    appended_data.to_csv(os.path.join(mypath, this_name),index=False)
+    res.to_csv(os.path.join(mypath, this_name),index=False)
     
         
         
 
     
-    
-        
+
         
