@@ -28,27 +28,23 @@ from collections import Counter
 
 ##########################################################################
 
-my_path='/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG'
-#my_path='/shared/homes/152324/contigs/prodigal/reCOGnizer_results/KEGG'
+
+#python calculate_fold_change.py /shared/homes/152324 t2 t8  #UTS HPC
+#python calculate_fold_change.py /Users/dgaio/Desktop t2 t8  #local UZH   
+
+where=sys.argv[1]   
+t_before=sys.argv[2]
+t_after=sys.argv[3]
+
+KEGG=where+'/contigs/prodigal/reCOGnizer_results/KEGG'
 
 
-# run example: 
-# python recognizer_stats.py /Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG t2 t8       #local UZH   
-# python recognizer_stats.py /shared/homes/152324/contigs/prodigal/reCOGnizer_results/KEGG t2 t8       #UTS HPC
-# my_path=sys.argv[1]   
-# t_before=sys.argv[2]
-# t_after=sys.argv[3]
-
-#mypath="/shared/homes/152324/contigs/prodigal/reCOGnizer_results"
-mypath="/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results"
-t_before="t2"
-t_after="t8"
 
 ##########################################################################
 
 # running time for all subjects: 2.5h 
 
-print(my_path)
+print(KEGG)
 print('analysing time interval between', t_before, 'and', t_after)
 
 
@@ -57,14 +53,14 @@ start = time.time()
 # list to add subjects who have the requested time intervals info 
 subjects=[]
 
-for path_file in os.listdir(my_path): 
+for path_file in os.listdir(KEGG): 
     if path_file.startswith("all_rec_pathway_"):   #all_rec_pathway_ko00053.
         
         print(path_file)
         
-        #path_file = 'all_rec_pathway_ko00290.csv'
+        #path_file = 'all_rec_pathway_ko00051.csv'
         
-        df=my_path+'/'+path_file
+        df=KEGG+'/'+path_file
         
         # read in 
         df1 = pd.read_csv(df, index_col=None, low_memory=False)
@@ -114,8 +110,8 @@ for path_file in os.listdir(my_path):
             s_lists=[]
             pval_lists=[]
             for name,df in df4:
-                print(name,df) #df
-                
+                print(name,df) 
+                    
                 try:
                     
                     #####
@@ -123,7 +119,7 @@ for path_file in os.listdir(my_path):
                     a=df[df["date"]==t_before].norm_mapped_wa
                     b=df[df["date"]==t_after].norm_mapped_wa  
                     
-                    s,pval=stats.ttest_rel(a, b)
+                    s,pval=stats.ttest_rel(a, b, alternative="two-sided")
                     bonferroni_threshold=0.05/len(a)   
                     
                     
@@ -133,6 +129,8 @@ for path_file in os.listdir(my_path):
                         sign='**'
                     elif pval<=0.05:
                         sign='*'
+                    else:
+                        sign='ns'
 
                     # fold change per KO: 
                     log_fc=np.log(np.mean(b)/np.mean(a))
@@ -168,7 +166,7 @@ for path_file in os.listdir(my_path):
             # make into a single dataframe and save to plot with biopython_kegg.py 
             to_save = pd.concat(list_of_dataframes)
             # write to file
-            filename=my_path+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
+            filename=KEGG+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
             to_save.to_csv(filename, index=False, sep=',') 
             
         

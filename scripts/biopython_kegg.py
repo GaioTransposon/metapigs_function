@@ -77,9 +77,9 @@ for path_file in os.listdir(my_path+'/KEGG/'):
 for intervals_rec_pathway in intervals_rec_pathways:
     
     filename=my_path+'/KEGG/'+intervals_rec_pathway
-    rec=pd.read_csv(filename)
+    rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/fc_t2_t8_all_rec_pathway_ko00051.csv')
     
-    print(filename)
+    #print(filename)
     
     # produce intervals 
     log_fcs=rec['log_fc']
@@ -104,7 +104,9 @@ for intervals_rec_pathway in intervals_rec_pathways:
         # merge colors
         rec = pd.merge(colors, rec, on='interval')
         
-    
+    # change color cell to white if significance is ns:
+    rec.loc[rec["significance"] == "ns", "color"] = "#FFFFFF"
+        
     # get pathway name from file: 
     pathway_name=intervals_rec_pathway.split("_")[-1].split('.')[0]
     
