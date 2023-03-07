@@ -75,11 +75,13 @@ for path_file in os.listdir(my_path+'/KEGG/'):
 
 
 for intervals_rec_pathway in intervals_rec_pathways:
+    print(intervals_rec_pathway)
     
     filename=my_path+'/KEGG/'+intervals_rec_pathway
-    rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/fc_t2_t8_all_rec_pathway_ko00051.csv')
+    rec=pd.read_csv(filename)
     
-    #print(filename)
+    #rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/fc_t0_t10_all_rec_pathway_ko00020.csv')
+    #intervals_rec_pathway='fc_t0_t10_all_rec_pathway_ko00020.csv'
     
     # produce intervals 
     log_fcs=rec['log_fc']
@@ -140,15 +142,15 @@ for intervals_rec_pathway in intervals_rec_pathways:
                     # changing name of box to orthologous gene we have 
                     element.graphics[0].name=i+tes
                     
-                    print("yes", i, bg, fg)
+                    print("yes", i+tes, bg, fg)
                 else:
                     bg="#FFFFFF" # white
                     fg="#FFFFFF" # white
                     print("no", i)
                     
-            graphic.bgcolor=bg
-            graphic.fgcolor=fg     
-            print(graphic.bgcolor, graphic.fgcolor)
+                graphic.bgcolor=bg
+                graphic.fgcolor=fg     
+                print(graphic.bgcolor, graphic.fgcolor)
                 
                 
     canvas = KGMLCanvas(kgml, import_imagemap=True)  # to include lines of the biochemistry 
