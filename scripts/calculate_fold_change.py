@@ -35,8 +35,6 @@ my_path='/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG'
 # run example: 
 # python recognizer_stats.py /Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG t2 t8       #local UZH   
 # python recognizer_stats.py /shared/homes/152324/contigs/prodigal/reCOGnizer_results/KEGG t2 t8       #UTS HPC
-
-
 # my_path=sys.argv[1]   
 # t_before=sys.argv[2]
 # t_after=sys.argv[3]
@@ -60,9 +58,11 @@ start = time.time()
 subjects=[]
 
 for path_file in os.listdir(my_path): 
-    if path_file.startswith("all_rec_pathway_ko00062"):   #all_rec_pathway_ko00053.
+    if path_file.startswith("all_rec_pathway_"):   #all_rec_pathway_ko00053.
         
         print(path_file)
+        
+        #path_file = 'all_rec_pathway_ko00290.csv'
         
         df=my_path+'/'+path_file
         
@@ -93,63 +93,46 @@ for path_file in os.listdir(my_path):
     
             # filter dataframe based on list: 
             df4 = df2[df2['pig'].isin(subjects)] 
-    
+            
+            # for each sample (pig and date) and gather the count data from each KO (comment out if you want fc and ttest to be down on the contig_orf basis)     
+            df4 = df4.groupby(['pig','date','KO'], as_index=False).agg({'norm_mapped_wa': 'sum', 'pathway': 'first', 'evalue': 'first'})
+            
             # split by KO
             df4 = df4.groupby('KO') 
             [df4.get_group(x) for x in df4.groups]
             
             list_of_dataframes=[]
-            
             t_statistic=[]
             p_val=[]
             bonferroni_thresholds=[]
             significances=[]
             log_fcs=[]
             names=[]
-            ECs=[]
-            CDD_IDs=[]
             pathway=[]
             n_subjects_list=[]
-            n_contigs_list=[]
+            #n_contigs_list=[] # (remove comment if you want fc and ttest to be down on the contig_orf basis and therefore need tot number of contigs)  
             s_lists=[]
             pval_lists=[]
             for name,df in df4:
-                print(name) #df
+                print(name,df) #df
                 
                 try:
                     
-# =============================================================================
-#                     #####
-#                     # t-test is done per KO, per pig
-#                     df_pig = df.groupby('pig') 
-#                     [df_pig.get_group(x) for x in df_pig.groups]
-#                     
-#                     pval_list=[]
-#                     s_list=[]                    
-#                     for i,dff in df_pig:
-#                         
-#                         aa=dff[dff["date"]=="t2"].norm_mapped_wa
-#                         bb=dff[dff["date"]=="t8"].norm_mapped_wa                     
-#                         
-#                         s,pval=stats.ttest_rel(aa, bb)
-#                         
-#                         s_list.append(s)
-#                         pval_list.append(pval)
-#                     #####
-# =============================================================================
-
                     #####
                     # t-test per KO:
-                    a=df[df["date"]=="t2"].norm_mapped_wa
-                    b=df[df["date"]=="t8"].norm_mapped_wa  
+                    a=df[df["date"]==t_before].norm_mapped_wa
+                    b=df[df["date"]==t_after].norm_mapped_wa  
                     
                     s,pval=stats.ttest_rel(a, b)
                     bonferroni_threshold=0.05/len(a)   
                     
-                    if pval<=bonferroni_threshold:
-                        sign='*'
-                    else:
+                    
+                    if pval>0.05:
                         sign='ns'
+                    elif pval<=bonferroni_threshold:
+                        sign='**'
+                    elif pval<=0.05:
+                        sign='*'
 
                     # fold change per KO: 
                     log_fc=np.log(np.mean(b)/np.mean(a))
@@ -159,29 +142,24 @@ for path_file in os.listdir(my_path):
                 except: 
                     
                     print(name, ": div by zero")
-
-# =============================================================================
-#                 s_lists.append(str(s_list))
-#                 pval_lists.append(str(pval_list))
-# =============================================================================
+                    
                 t_statistic.append(s)
                 p_val.append(pval)
                 bonferroni_thresholds.append(bonferroni_threshold)
                 significances.append(sign)
                 log_fcs.append(log_fc)
                 names.append(name)  
-                ECs.append(df['EC number'].unique().tolist())
-                CDD_IDs.append(df['CDD ID'].unique().tolist()[0])
                 pathway.append(df['pathway'].unique().tolist())
                 
                 n_subjects=len(df['pig'].unique())
                 n_subjects_list.append(n_subjects)
                 
-                n_contigs_list.append(len(df)/2) # /2 because each contig, two time intervals 
-                
-                # save results map 
-                df5 = pd.DataFrame(np.column_stack([names, log_fcs, ECs, CDD_IDs, pathway, n_subjects_list, n_contigs_list, t_statistic, p_val, bonferroni_thresholds, significances]), 
-                                   columns=['KO', 'log_fc', 'EC number', 'CDD ID', 'pathway','n_subjects', 'n_contigs', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
+                #n_contigs_list.append(len(df)/2) # /2 because each contig, two time intervals  # (remove comment if you want fc and ttest to be down on the contig_orf basis and therefore need tot number of contigs)  
+                    
+
+            # save results map 
+            df5 = pd.DataFrame(np.column_stack([names, log_fcs, pathway, n_subjects_list, t_statistic, p_val, bonferroni_thresholds, significances]),    
+                               columns=['KO', 'log_fc', 'pathway','n_subjects', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
                 
                 
             # add to list 
@@ -199,24 +177,6 @@ for path_file in os.listdir(my_path):
             pass
                 
 
-# uni=a['pig'].unique()
-
-# for i in uni:
-#     print(i)
-#     aa=a[a["pig"]==i]
-#     bb=b[b["pig"]==i]
-    
-#     if len(aa)==len(bb):
-#         print('')
-        
-#     else:
-#         print('diff')
-
-# aa=a[a["pig"]=="14208"]
-# bb=b[b["pig"]=="14208"]
-
-# aa has k141_985266_1 twice
-# bb has k141_985266_1 once 
 
 
 

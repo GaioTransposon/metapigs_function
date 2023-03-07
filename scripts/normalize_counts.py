@@ -11,16 +11,14 @@ import pandas as pd
 import glob
 
 
-mypath="/shared/homes/152324/contigs"
+mypath = input('Please pass path to directory containing files ending with "contig_Counts_parsed_weighted_contigs.csv" \n') 
+# /Users/dgaio/Desktop/contigs     <-- local UZH
+# /shared/homes/152324/contigs     <-- HPC UTS
 
 print('this is your path', mypath)
 
 filelist = glob.glob(mypath) 
 
-
-# mypath = input('Please pass path to directory containing files ending with "contig_Counts_parsed_weighted_contigs.csv" \n') 
-# /Users/dgaio/Desktop/contigs     <-- local UZH
-# /shared/homes/152324/contigs     <-- HPC UTS
 
 
 dictionary = {}   

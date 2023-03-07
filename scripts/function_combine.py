@@ -10,18 +10,16 @@ import os
 import pandas as pd
 
 
-# =============================================================================
-# path_to_wa_contigs = input('Please pass path to contig directory" \n') 
-# # /Users/dgaio/Desktop/contigs                                  <-- local UZH
-# # /shared/homes/152324/contigs                                  <-- HPC UTS
-# 
-# path_to_gtdb = input('Please pass path to GTDB_bins_completeTaxa file \n')
-# # /Users/dgaio/github/metapigs_dry/middle_dir                   <-- local UZH
-# # /shared/homes/152324                                          <-- HPC UTS
-# =============================================================================
+path_to_wa_contigs = input('Please pass path to contig directory" \n') 
+# /Users/dgaio/Desktop/contigs                                  <-- local UZH
+# /shared/homes/152324/contigs                                  <-- HPC UTS
 
-path_to_wa_contigs = "/shared/homes/152324/contigs"
-path_to_gtdb = "/shared/homes/152324"
+path_to_gtdb = input('Please pass path to GTDB_bins_completeTaxa file \n')
+# /Users/dgaio/github/metapigs_dry/middle_dir                   <-- local UZH
+# /shared/homes/152324                                          <-- HPC UTS
+
+# path_to_wa_contigs = "/shared/homes/152324/contigs"
+# path_to_gtdb = "/shared/homes/152324"
 
 # gtdb read in 
 gtdb = pd.read_csv(os.path.join(path_to_gtdb, "GTDB_bins_completeTaxa"))

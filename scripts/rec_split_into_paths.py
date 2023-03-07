@@ -34,6 +34,18 @@ with open(filename, 'rb') as fp:
     my_pathways = pickle.load(fp)
     print(my_pathways)
 
+my_pathways=dict(list(my_pathways.items())[0: 70])
+
+new_pathways={}
+for i in my_pathways:
+    new_pathways[i]=[]
+    this=[]
+    for ii in my_pathways[i]:
+        ii=ii.replace('ko:','')
+        this.append(ii)
+    new_pathways[i]=this
+my_pathways=new_pathways
+
 
 # for each subject: 
 # 1. open rec file

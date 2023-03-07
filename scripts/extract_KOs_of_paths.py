@@ -16,7 +16,7 @@ from Bio.KEGG.KGML import KGML_parser
 from Bio.Graphics.KGML_vis import KGMLCanvas
 from Bio.Graphics.ColorSpiral import ColorSpiral
 from IPython.display import Image, HTML
-import randome
+import random
 from colour import Color
 import seaborn as sns
 import csv
@@ -53,20 +53,21 @@ for i in pathways_list:
 paths_df = pd.DataFrame(np.column_stack([paths, descr]), 
                          columns=['path', 'description'])
 
-##############
-
+##############    
 # for each path, get KOs: 
 my_dic={} 
 successful=0
 failed=0
-for index, row in paths_df[0:30].iterrows():   # for testing purposes: paths_df[0:10]
-    
+for index, row in paths_df[0:5].iterrows():   # for testing purposes: paths_df[0:10]
+    print(index,row)
     KOs_list=[]
     
     # append , as first item, pathways description: 
     KOs_list.append(row[1])
     
     try:    
+        import requests
+        requests.get(url)
         my_pathway = KGML_parser.read(kegg_get(row['path'], "kgml"))
 
         for element in my_pathway.orthologs:    
