@@ -86,14 +86,14 @@ for intervals_rec_pathway in intervals_rec_pathways:
     # produce intervals 
     log_fcs=rec['log_fc']
     
-        
+
     if len(log_fcs)>1:
         down=np.linspace(start=min(log_fcs), stop=0, num=10).tolist()
         up=np.linspace(start=0, stop=max(log_fcs), num=10).tolist()
         down_up=down+up
         down_up.sort()
         rec['log_fc']=pd.to_numeric(rec['log_fc'])
-        rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', right=True, labels=False)+1
+        rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', include_lowest=True, labels=False)+1
         # merge colors
         rec = pd.merge(colors, rec, on='interval')
         
@@ -102,7 +102,7 @@ for intervals_rec_pathway in intervals_rec_pathways:
         down_up=np.linspace(start=-1, stop=+1, num=20).tolist()
         down_up.sort()
         rec['log_fc']=pd.to_numeric(rec['log_fc'])
-        rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', right=True, labels=False)+1
+        rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', include_lowest=True, labels=False)+1
         # merge colors
         rec = pd.merge(colors, rec, on='interval')
         
@@ -126,6 +126,10 @@ for intervals_rec_pathway in intervals_rec_pathways:
         print(n)
         for graphic in element.graphics:
             
+            
+            bg="#FFFFFF" # white
+            fg="#FFFFFF" # white
+            
             for i in temps:
                 if any(i in sublist for sublist in rec['KO']):             
                     this_color=rec.loc[rec['KO'] == i]['color']
@@ -144,13 +148,12 @@ for intervals_rec_pathway in intervals_rec_pathways:
                     
                     print("yes", i+tes, bg, fg)
                 else:
-                    bg="#FFFFFF" # white
-                    fg="#FFFFFF" # white
+                    
                     print("no", i)
                     
-                graphic.bgcolor=bg
-                graphic.fgcolor=fg     
-                print(graphic.bgcolor, graphic.fgcolor)
+            graphic.bgcolor=bg
+            graphic.fgcolor=fg     
+            print(graphic.bgcolor, graphic.fgcolor)
                 
                 
     canvas = KGMLCanvas(kgml, import_imagemap=True)  # to include lines of the biochemistry 
