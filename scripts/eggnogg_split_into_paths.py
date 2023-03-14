@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Feb 19 10:09:18 2023
+Created on Tue Mar 14 15:20:31 2023
 
 @author: dgaio
 """
 
-import sys
 import pandas as pd
 import csv
 import time
@@ -19,8 +18,8 @@ start = time.time()
 
 ##########################################################################
 
-#python rec_split_into_paths.py /shared/homes/152324  #UTS HPC
-#python rec_split_into_paths.py /Users/dgaio/Desktop  #local UZH   
+#python extract_KOs_of_paths.py /shared/homes/152324  #UTS HPC
+#python extract_KOs_of_paths.py /Users/dgaio/Desktop  #local UZH   
 
 where=sys.argv[1]   
 
@@ -31,7 +30,7 @@ my_path=where+'/contigs/prodigal/reCOGnizer_results'
 
 
 # open EC to KO translations:
-filename=where+'KEGG_pathways/ec_to_ko.tsv'
+filename=my_path+'/ec_to_ko.tsv'
 ec_to_ko = pd.read_csv(filename, index_col=None, sep='\t')
 
 # open the pathways dictionary: 

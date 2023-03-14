@@ -6,6 +6,7 @@ Created on Thu Feb 16 10:12:29 2023
 @author: dgaio
 """
 
+import sys
 import pandas as pd
 import numpy as np
 import os
@@ -25,10 +26,17 @@ import pickle
 
 ##########################################################################
 
-my_path='/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results'
-#my_path='/shared/homes/152324/contigs/prodigal/reCOGnizer_results'
+#python extract_KOs_of_paths.py /shared/homes/152324  #UTS HPC
+#python extract_KOs_of_paths.py /Users/dgaio/Desktop  #local UZH   
+
+where=sys.argv[1]   
+
+my_path=where+'/github/metapigs_function/middle_dir'
+
 
 ##########################################################################
+
+
 
 # list each path available: 
 pathways = kegg_list('pathway').read()
@@ -58,7 +66,7 @@ paths_df = pd.DataFrame(np.column_stack([paths, descr]),
 my_dic={} 
 successful=0
 failed=0
-for index, row in paths_df[0:5].iterrows():   # for testing purposes: paths_df[0:10]
+for index, row in paths_df.iterrows():   # for testing purposes: paths_df[0:10]
     print(index,row)
     KOs_list=[]
     

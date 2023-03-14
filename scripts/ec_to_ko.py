@@ -6,6 +6,7 @@ Created on Wed Feb 22 10:56:42 2023
 @author: dgaio
 """
 
+import sys
 import pandas as pd
 import numpy as np
 import os
@@ -23,8 +24,13 @@ import seaborn as sns
 
 ##########################################################################
 
-my_path='/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results'
-#my_path='/shared/homes/152324/contigs/prodigal/reCOGnizer_results'
+#python extract_KOs_of_paths.py /shared/homes/152324  #UTS HPC
+#python extract_KOs_of_paths.py /Users/dgaio/Desktop  #local UZH   
+
+where=sys.argv[1]   
+
+my_path=where+'/contigs/prodigal/KEGG_pathways'
+
 
 ##########################################################################
 
