@@ -26,13 +26,7 @@ import pickle
 
 ##########################################################################
 
-#python extract_KOs_of_paths.py /shared/homes/152324  #UTS HPC
-#python extract_KOs_of_paths.py /Users/dgaio/Desktop  #local UZH   
-
-where=sys.argv[1]   
-
-my_path=where+'/github/metapigs_function/middle_dir'
-
+my_path=os.path.expanduser('~')+'/github/metapigs_function/middle_dir'
 
 ##########################################################################
 

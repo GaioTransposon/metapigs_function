@@ -6,11 +6,13 @@ Created on Tue Mar 14 15:20:31 2023
 @author: dgaio
 """
 
+import sys
 import pandas as pd
 import csv
 import time
 import os 
 import pickle
+import numpy as np
 
 
 start = time.time()
@@ -18,23 +20,22 @@ start = time.time()
 
 ##########################################################################
 
-#python extract_KOs_of_paths.py /shared/homes/152324  #UTS HPC
-#python extract_KOs_of_paths.py /Users/dgaio/Desktop  #local UZH   
+#python eggnogg_split_into_paths.py /shared/homes/152324  #UTS HPC
+#python eggnogg_split_into_paths.py /Users/dgaio/Desktop  #local UZH   
 
 where=sys.argv[1]   
 
-
-my_path=where+'/contigs/prodigal/reCOGnizer_results'
+my_path=where+'/contigs/prodigal/eggnogg'
 
 ##########################################################################
 
 
 # open EC to KO translations:
-filename=my_path+'/ec_to_ko.tsv'
+filename=os.path.expanduser('~')+'/github/metapigs_function/middle_dir/'+'ec_to_ko.tsv'
 ec_to_ko = pd.read_csv(filename, index_col=None, sep='\t')
 
 # open the pathways dictionary: 
-filename=my_path+'/pathways.pkl'
+filename=os.path.expanduser('~')+'/github/metapigs_function/middle_dir/'+'pathways.pkl'
 with open(filename, 'rb') as fp:
     my_pathways = pickle.load(fp)
     print(my_pathways)
@@ -67,27 +68,35 @@ for my_dir in os.listdir(my_path):
 
         mysample = my_dir.replace(".faa", "")
         
-        rec_file=my_path+'/'+my_dir+'/'+mysample+'_reCOGnizer_results_eval_filtered_final.csv'
+        egg=my_path+'/'+my_dir+'/'+mysample+"_eggnogg_final.csv"
         
         # 1. open rec file
-        rec = pd.read_csv(rec_file, index_col=None)
-        
-        # 2. merge ec_to_ko info 
-        rec_ko = pd.merge(rec, ec_to_ko, on='EC number')    
+        egg = pd.read_csv(egg, index_col=None)
 
-        # 3. split up by path and save each within subject directory
+        
+        test=egg[1:1000]
+        
+        # filter out contigs without any KO assigned: 
+        test = test[~test['KEGG_ko'].str.contains("-")]
+
+        # remove 'ko:' from KEGG_ko values, and split them into a list
+        test["KO"] = [[e for e in x.replace('ko:','').split(",")] for x in test['KEGG_ko']]
+        
+        # sometimes >1 KOs are given. expand these rows, they won't be summed or average together anyway. 
+        test = test.explode('KO').reset_index(drop=True)
+
         for i in my_pathways:
-            #print(my_pathways[i])
+            print(my_pathways[i])
             these_KOs=my_pathways[i]
-            rec_sub=rec_ko[rec_ko['KO'].isin(these_KOs)]
             
-            rec_sub = rec_sub.copy()
-            rec_sub['pathway']=i
-            rec_sub['pathway_description']=these_KOs[0]
-            
+            test_sub=test[test['KO'].isin(these_KOs)]
+            test_sub = test_sub.copy()
+            test_sub['pathway']=i
+            test_sub['pathway_description']=these_KOs[0]
+
             # save to file
             filename=my_path+'/'+my_dir+'/pathway_'+i+'.csv'
-            rec_sub.to_csv(filename, index=False, sep=',') 
+            test_sub.to_csv(filename, index=False, sep=',') 
         
         print("recognizer files for ", mysample, " have been split to pathways")
 
@@ -95,6 +104,8 @@ for my_dir in os.listdir(my_path):
     else:
                 
         pass
+    
+    
 
 ##########################################################################
 
@@ -129,7 +140,7 @@ for f, paths in file_paths.items():
         my_list.append(df)
     concatenated = pd.concat(my_list)
     # write to file
-    filename=os.path.join(parent_dir, directory)+'/all_rec_'+f
+    filename=os.path.join(parent_dir, directory)+'/all_eggnogg_'+f
     concatenated.to_csv(filename, index=False, sep=',') 
     
 
