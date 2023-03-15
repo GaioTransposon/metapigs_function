@@ -38,7 +38,7 @@ with open(filename, 'rb') as fp:
     my_pathways = pickle.load(fp)
     print(my_pathways)
 
-my_pathways=dict(list(my_pathways.items())[0: 70])
+#my_pathways=dict(list(my_pathways.items())[0: 70])
 
 new_pathways={}
 for i in my_pathways:

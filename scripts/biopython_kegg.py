@@ -8,6 +8,9 @@ Created on Mon Feb 13 10:02:54 2023
 
 # tutorial from:
 # https://nbviewer.org/github/widdowquinn/notebooks/blob/master/Biopython_KGML_intro.ipynb
+
+
+import sys
 import pandas as pd
 import numpy as np
 import os
