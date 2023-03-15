@@ -11,8 +11,19 @@ import pandas as pd
 import glob
 
 
+
+##########################################################################
+
+
+#python normalize_counts.py 
+
+
 where=os.path.expanduser('~')
 mypath=where+"/contigs"     
+
+
+##########################################################################
+
 
 
 filelist = glob.glob(mypath) 
