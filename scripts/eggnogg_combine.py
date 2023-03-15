@@ -26,7 +26,7 @@ path_to_gtdb=where+"/github/metapigs_dry/middle_dir"
 
 
 # gtdb read in 
-gtdb = pd.read_csv(os.path.join(path_to_gtdb, "GTDB_bins_completeTaxa"))
+gtdb = pd.read_csv(os.path.join(path_to_gtdb, "gtdb_bins_completeTaxa"))
 print(len(gtdb))
 gtdb['pig'] = gtdb['pig'].astype(str)
 type(gtdb)
