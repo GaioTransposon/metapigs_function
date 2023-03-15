@@ -8,16 +8,22 @@
 
 source activate recognizer_env
 
-python /shared/homes/152324/contigs/normalize_counts.py
-        
-python /shared/homes/152324/contigs/prodigal/function_combine.py
+cd github/metapigs_function/scripts
 
-python /shared/homes/152324/contigs/prodigal/extract_KOs_of_paths.py 
 
-python /shared/homes/152324/contigs/prodigal/ec_to_ko.py
 
-python /shared/homes/152324/contigs/prodigal/rec_split_into_paths.py
+#python normalize_counts.py
 
-python /shared/homes/152324/contigs/prodigal/calculate_fold_change.py
+python eggnogg_combine.py
 
-python /shared/homes/152324/contigs/prodigal/biopython_kegg.py
+#python extract_KOs_of_paths.py
+
+#python ec_to_ko.py
+
+python eggnogg_split_into_paths.py
+
+python calculate_fold_change.py eggnogg t2 t8
+python calculate_fold_change.py eggnogg t0 t10
+
+python biopython_kegg.py eggnogg
+
