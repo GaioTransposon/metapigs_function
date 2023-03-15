@@ -25,8 +25,16 @@ import seaborn as sns
 
 ##########################################################################
 
-my_path='/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results'
-#my_path='/shared/homes/152324/contigs/prodigal/reCOGnizer_results'
+
+# if using reCOGnizer annotations:
+#python biopython_kegg.py reCOGnizer_results
+
+# if using eggnogg annotations: 
+#python biopython_kegg.py eggnogg
+
+
+where=os.path.expanduser('~')+'/contigs/prodigal/'+sys.argv[1]  
+
 
 ##########################################################################
 
@@ -68,7 +76,7 @@ colors = pd.DataFrame(cols.items(), columns=['interval', 'color'])
 # 2) 
 
 intervals_rec_pathways=[]
-for path_file in os.listdir(my_path+'/KEGG/'): 
+for path_file in os.listdir(where+'/KEGG/'): 
     if path_file.startswith("fc"):
         print(path_file)
         intervals_rec_pathways.append(path_file)
@@ -77,7 +85,7 @@ for path_file in os.listdir(my_path+'/KEGG/'):
 for intervals_rec_pathway in intervals_rec_pathways:
     print(intervals_rec_pathway)
     
-    filename=my_path+'/KEGG/'+intervals_rec_pathway
+    filename=where+'/KEGG/'+intervals_rec_pathway
     rec=pd.read_csv(filename)
     
     #rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/fc_t0_t10_all_rec_pathway_ko00020.csv')
@@ -160,7 +168,7 @@ for intervals_rec_pathway in intervals_rec_pathways:
     
     t_before=intervals_rec_pathway.split("_")[1]
     t_after=intervals_rec_pathway.split("_")[2]
-    filename=my_path+'/KEGG/'+t_before+'_'+t_after+'_'+pathway_name+'.pdf'
+    filename=where+'/KEGG/'+t_before+'_'+t_after+'_'+pathway_name+'.pdf'
     canvas.draw(filename)
     PDF(filename)
     

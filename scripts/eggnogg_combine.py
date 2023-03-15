@@ -14,18 +14,12 @@ import pandas as pd
 ##########################################################################
 
 
-#python eggnogg_combine.py /shared/homes/152324 /shared/homes/152324  #UTS HPC
-#python eggnogg_combine.py /Users/dgaio/Desktop /Users/dgaio/github/metapigs_dry/middle_dir  #local UZH   
+#python eggnogg_combine.py 
 
-#where=sys.argv[1]   
-#path_to_gtdb=sys.argv[2]
-where="/Users/dgaio/Desktop"
-path_to_gtdb="/Users/dgaio/github/metapigs_dry/middle_dir"
-
-
-
-path_to_wa_contigs=where+"/contigs"
+where=os.path.expanduser('~')
+path_to_wa_contigs=where+"/contigs"      
 path_to_eggnogg=path_to_wa_contigs+"/prodigal/eggnogg"
+path_to_gtdb=where+"/github/metapigs_dry/middle_dir"
 
 
 ##########################################################################
@@ -98,7 +92,7 @@ for mysample in mysamples:
     # write 
     name_of_file=path_to_eggnogg+"/"+mysample+".faa/"+mysample+"_eggnogg_final.csv"
     df2.to_csv(name_of_file, index=False) 
-    print('writing done')
+    print('writing of ', mysample, ' done')
     
     
 

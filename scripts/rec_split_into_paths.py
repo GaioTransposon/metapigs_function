@@ -130,7 +130,7 @@ for f, paths in file_paths.items():
         my_list.append(df)
     concatenated = pd.concat(my_list)
     # write to file
-    filename=os.path.join(parent_dir, directory)+'/all_rec_'+f
+    filename=os.path.join(parent_dir, directory)+'/all_'+f
     concatenated.to_csv(filename, index=False, sep=',') 
     
 

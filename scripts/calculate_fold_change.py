@@ -17,34 +17,33 @@ import csv
 from collections import Counter
 
 
+# STEPS: 
 # check which uniq subjects have both intervals, make a list
-
 # filter based on this list of subjects 
-
 # filter intervals 
-
 # calc fold changes 
 
 
 ##########################################################################
 
 
-#python calculate_fold_change.py /shared/homes/152324 t2 t8  #UTS HPC
-#python calculate_fold_change.py /Users/dgaio/Desktop t2 t8  #local UZH   
+# if using reCOGnizer annotations:
+#python calculate_fold_change.py reCOGnizer_results t2 t8 
 
-where=sys.argv[1]   
+# if using eggnogg annotations: 
+#python calculate_fold_change.py eggnogg t2 t8    
+
+
+where=os.path.expanduser('~')+'/contigs/prodigal/'+sys.argv[1]  
 t_before=sys.argv[2]
 t_after=sys.argv[3]
-
-KEGG=where+'/contigs/prodigal/reCOGnizer_results/KEGG'
-
 
 
 ##########################################################################
 
 # running time for all subjects: 2.5h 
 
-print(KEGG)
+
 print('analysing time interval between', t_before, 'and', t_after)
 
 
@@ -53,14 +52,14 @@ start = time.time()
 # list to add subjects who have the requested time intervals info 
 subjects=[]
 
-for path_file in os.listdir(KEGG): 
-    if path_file.startswith("all_rec_pathway_"):   #all_rec_pathway_ko00053.
+for path_file in os.listdir(where+'/KEGG'): 
+    if path_file.startswith("all_"):   
         
         print(path_file)
         
         #path_file = 'all_rec_pathway_ko00051.csv'
         
-        df=KEGG+'/'+path_file
+        df=where+'/KEGG'+'/'+path_file
         
         # read in 
         df1 = pd.read_csv(df, index_col=None, low_memory=False)
@@ -91,7 +90,7 @@ for path_file in os.listdir(KEGG):
             df4 = df2[df2['pig'].isin(subjects)] 
             
             # for each sample (pig and date) and gather the count data from each KO (comment out if you want fc and ttest to be down on the contig_orf basis)     
-            df4 = df4.groupby(['pig','date','KO'], as_index=False).agg({'norm_mapped_wa': 'sum', 'pathway': 'first', 'evalue': 'first'})
+            df4 = df4.groupby(['pig','date','KO'], as_index=False).agg({'norm_mapped_wa': 'sum', 'pathway': 'first', 'pathway_description': 'first', 'evalue': 'first'})
             
             # split by KO
             df4 = df4.groupby('KO') 
@@ -105,6 +104,7 @@ for path_file in os.listdir(KEGG):
             log_fcs=[]
             names=[]
             pathway=[]
+            pathway_description=[]
             n_subjects_list=[]
             #n_contigs_list=[] # (remove comment if you want fc and ttest to be down on the contig_orf basis and therefore need tot number of contigs)  
             s_lists=[]
@@ -148,6 +148,7 @@ for path_file in os.listdir(KEGG):
                 log_fcs.append(log_fc)
                 names.append(name)  
                 pathway.append(df['pathway'].unique().tolist())
+                pathway_description.append(df['pathway_description'].unique().tolist())
                 
                 n_subjects=len(df['pig'].unique())
                 n_subjects_list.append(n_subjects)
@@ -156,8 +157,8 @@ for path_file in os.listdir(KEGG):
                     
 
             # save results map 
-            df5 = pd.DataFrame(np.column_stack([names, log_fcs, pathway, n_subjects_list, t_statistic, p_val, bonferroni_thresholds, significances]),    
-                               columns=['KO', 'log_fc', 'pathway','n_subjects', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
+            df5 = pd.DataFrame(np.column_stack([names, log_fcs, pathway, pathway_description, n_subjects_list, t_statistic, p_val, bonferroni_thresholds, significances]),    
+                               columns=['KO', 'log_fc', 'pathway','pathway_description', 'n_subjects', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
                 
                 
             # add to list 
@@ -166,7 +167,7 @@ for path_file in os.listdir(KEGG):
             # make into a single dataframe and save to plot with biopython_kegg.py 
             to_save = pd.concat(list_of_dataframes)
             # write to file
-            filename=KEGG+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
+            filename=where+'/KEGG'+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
             to_save.to_csv(filename, index=False, sep=',') 
             
         
