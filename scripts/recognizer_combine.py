@@ -63,26 +63,35 @@ for mysample in mysamples:
     df1 = pd.merge(counts,gtdb,on=['bin','pig'], how="left") # "left" keeps everything in counts 
 
     recognizer=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/reCOGnizer_results_eval_filtered.csv"
-    # read in
-    recognizer = pd.read_csv(recognizer)
-    recognizer['pig'] = recognizer['pig'].astype(str)
-    print(len(recognizer))
-    print(len(df1))
-
-    df2 = pd.merge(recognizer,df1, on=['contig','pig'])
-    df2
-    print(len(df2))
+    
+    if os.path.isfile(recognizer):
+        
+        print('recognizer annotation file for', mysample, ' exists')
+        
+        # read in
+        recognizer = pd.read_csv(recognizer)
+        recognizer['pig'] = recognizer['pig'].astype(str)
+        print(len(recognizer))
+        print(len(df1))
+    
+        df2 = pd.merge(recognizer,df1, on=['contig','pig'])
+        df2
+        print(len(df2))
+        
+        
+        if mysample in controls:
+        
+            df2['pig'] = df2['pig'].astype(str) + '_' + df2['replicate'].astype(str)
     
     
-    if mysample in controls:
+        # write 
+        name_of_file=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/"+mysample+"_reCOGnizer_results_eval_filtered_final.csv"
+        df2.to_csv(name_of_file, index=False) 
+        print('writing done')
     
-        df2['pig'] = df2['pig'].astype(str) + '_' + df2['replicate'].astype(str)
-
-
-    # write 
-    name_of_file=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/"+mysample+"_reCOGnizer_results_eval_filtered_final.csv"
-    df2.to_csv(name_of_file, index=False) 
-    print('writing done')
+    
+    else: 
+        print('recognizer annotation file for', mysample, ' does not exists')
     
     
 
