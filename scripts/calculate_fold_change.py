@@ -57,7 +57,7 @@ for path_file in os.listdir(where+'/KEGG'):
         
         print(path_file)
         
-        #path_file = 'all_rec_pathway_ko00051.csv'
+        #path_file = 'all_pathway_ko00520.csv'
         
         df=where+'/KEGG'+'/'+path_file
         
@@ -89,6 +89,11 @@ for path_file in os.listdir(where+'/KEGG'):
             # filter dataframe based on list: 
             df4 = df2[df2['pig'].isin(subjects)] 
             
+            # add pseudo count (min non zero value) to all
+            pseudo_count = df4.norm_mapped_wa[df4.norm_mapped_wa!=0].min()
+            df4 = df4.copy()
+            df4['norm_mapped_wa']=df4['norm_mapped_wa'].add(pseudo_count)
+            
             # for each sample (pig and date) and gather the count data from each KO (comment out if you want fc and ttest to be down on the contig_orf basis)     
             df4 = df4.groupby(['pig','date','KO'], as_index=False).agg({'norm_mapped_wa': 'sum', 'pathway': 'first', 'pathway_description': 'first', 'evalue': 'first'})
             
@@ -106,12 +111,11 @@ for path_file in os.listdir(where+'/KEGG'):
             pathway=[]
             pathway_description=[]
             n_subjects_list=[]
-            #n_contigs_list=[] # (remove comment if you want fc and ttest to be down on the contig_orf basis and therefore need tot number of contigs)  
             s_lists=[]
             pval_lists=[]
             for name,df in df4:
                 print(name,df) 
-                    
+
                 try:
                     
                     #####
@@ -153,14 +157,17 @@ for path_file in os.listdir(where+'/KEGG'):
                 n_subjects=len(df['pig'].unique())
                 n_subjects_list.append(n_subjects)
                 
-                #n_contigs_list.append(len(df)/2) # /2 because each contig, two time intervals  # (remove comment if you want fc and ttest to be down on the contig_orf basis and therefore need tot number of contigs)  
-                    
 
             # save results map 
             df5 = pd.DataFrame(np.column_stack([names, log_fcs, pathway, pathway_description, n_subjects_list, t_statistic, p_val, bonferroni_thresholds, significances]),    
                                columns=['KO', 'log_fc', 'pathway','pathway_description', 'n_subjects', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
                 
-                
+            
+            # converting to real nan
+            df5=df5.replace('nan', np.NaN)
+            # dropping rows contaning nan 
+            df5=df5.dropna()
+
             # add to list 
             list_of_dataframes.append(df5)
             

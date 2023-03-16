@@ -91,8 +91,8 @@ for intervals_rec_pathway in intervals_rec_pathways:
     filename=where+'/KEGG/'+intervals_rec_pathway
     rec=pd.read_csv(filename)
     
-    #rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/reCOGnizer_results/KEGG/fc_t0_t10_all_rec_pathway_ko00020.csv')
-    #intervals_rec_pathway='fc_t0_t10_all_rec_pathway_ko00020.csv'
+    #rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/eggnogg/KEGG/fc_t2_t8_all_pathway_ko00500.csv')
+    #intervals_rec_pathway='fc_t2_t8_all_pathway_ko00500.csv'
     
     # produce intervals 
     log_fcs=rec['log_fc']
