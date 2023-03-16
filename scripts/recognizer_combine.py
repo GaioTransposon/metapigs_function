@@ -6,28 +6,29 @@ Created on Mon Jan  9 16:38:59 2023
 @author: dgaio
 """
 
+import sys
 import os
 import pandas as pd
 
 
-path_to_wa_contigs = input('Please pass path to contig directory" \n') 
-# /Users/dgaio/Desktop/contigs                                  <-- local UZH
-# /shared/homes/152324/contigs                                  <-- HPC UTS
+##########################################################################
 
-path_to_gtdb = input('Please pass path to GTDB_bins_completeTaxa file \n')
-# /Users/dgaio/github/metapigs_dry/middle_dir                   <-- local UZH
-# /shared/homes/152324                                          <-- HPC UTS
 
-# path_to_wa_contigs = "/shared/homes/152324/contigs"
-# path_to_gtdb = "/shared/homes/152324"
+#python recognizer_combine.py 
+
+where=os.path.expanduser('~')
+path_to_wa_contigs=where+"/contigs"      
+path_to_gtdb=where+"/github/metapigs_dry/middle_dir"
+
+
+##########################################################################
+
 
 # gtdb read in 
-gtdb = pd.read_csv(os.path.join(path_to_gtdb, "GTDB_bins_completeTaxa"))
+gtdb = pd.read_csv(os.path.join(path_to_gtdb, "gtdb_bins_completeTaxa"))
 print(len(gtdb))
 gtdb['pig'] = gtdb['pig'].astype(str)
 type(gtdb)
-# if no bin, say no_bin
-# ....
 
 
 # get list of ids
@@ -60,22 +61,13 @@ for mysample in mysamples:
 
     # join 
     df1 = pd.merge(counts,gtdb,on=['bin','pig'], how="left") # "left" keeps everything in counts 
-    
-    # for i in df1:
-    #     print(i)
 
     recognizer=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/reCOGnizer_results_eval_filtered.csv"
     # read in
     recognizer = pd.read_csv(recognizer)
     recognizer['pig'] = recognizer['pig'].astype(str)
     print(len(recognizer))
-    
-    # for i in recognizer:
-    #     print(i)
-        
-    print(len(recognizer))
     print(len(df1))
-
 
     df2 = pd.merge(recognizer,df1, on=['contig','pig'])
     df2

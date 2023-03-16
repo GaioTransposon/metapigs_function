@@ -19,23 +19,20 @@ start = time.time()
 
 ##########################################################################
 
-#python rec_split_into_paths.py /shared/homes/152324  #UTS HPC
-#python rec_split_into_paths.py /Users/dgaio/Desktop  #local UZH   
+#python eggnogg_split_into_paths.py 
 
-where=sys.argv[1]   
-
-
-my_path=where+'/contigs/prodigal/reCOGnizer_results'
+where=os.path.expanduser('~')
+path_to_rec=where+'/contigs/prodigal/reCOGnizer_results'
 
 ##########################################################################
 
 
 # open EC to KO translations:
-filename=where+'KEGG_pathways/ec_to_ko.tsv'
+filename=os.path.expanduser('~')+'/github/metapigs_function/middle_dir/'+'ec_to_ko.tsv'
 ec_to_ko = pd.read_csv(filename, index_col=None, sep='\t')
 
 # open the pathways dictionary: 
-filename=my_path+'/pathways.pkl'
+filename=os.path.expanduser('~')+'/github/metapigs_function/middle_dir/'+'pathways.pkl'
 with open(filename, 'rb') as fp:
     my_pathways = pickle.load(fp)
     print(my_pathways)
@@ -62,38 +59,45 @@ my_pathways=new_pathways
 
 ##########################################################################
 
-for my_dir in os.listdir(my_path):
+for my_dir in os.listdir(path_to_rec):
 
     if my_dir.endswith(".faa"):
 
         mysample = my_dir.replace(".faa", "")
         
-        rec_file=my_path+'/'+my_dir+'/'+mysample+'_reCOGnizer_results_eval_filtered_final.csv'
+        rec_file=path_to_rec+'/'+my_dir+'/'+mysample+'_reCOGnizer_results_eval_filtered_final.csv'
         
-        # 1. open rec file
-        rec = pd.read_csv(rec_file, index_col=None)
         
-        # 2. merge ec_to_ko info 
-        rec_ko = pd.merge(rec, ec_to_ko, on='EC number')    
-
-        # 3. split up by path and save each within subject directory
-        for i in my_pathways:
-            #print(my_pathways[i])
-            these_KOs=my_pathways[i]
-            rec_sub=rec_ko[rec_ko['KO'].isin(these_KOs)]
+        if os.path.isfile(rec_file):
             
-            rec_sub = rec_sub.copy()
-            rec_sub['pathway']=i
-            rec_sub['pathway_description']=these_KOs[0]
-            
-            # save to file
-            filename=my_path+'/'+my_dir+'/pathway_'+i+'.csv'
-            rec_sub.to_csv(filename, index=False, sep=',') 
+            print('recognizer annotation file for', mysample, ' exists')
         
-        print("recognizer files for ", mysample, " have been split to pathways")
-
+            # 1. open rec file
+            rec = pd.read_csv(rec_file, index_col=None)
+            
+            # 2. merge ec_to_ko info 
+            rec_ko = pd.merge(rec, ec_to_ko, on='EC number')    
+    
+            # 3. split up by path and save each within subject directory
+            for i in my_pathways:
+                #print(my_pathways[i])
+                these_KOs=my_pathways[i]
+                rec_sub=rec_ko[rec_ko['KO'].isin(these_KOs)]
                 
-    else:
+                rec_sub = rec_sub.copy()
+                rec_sub['pathway']=i
+                rec_sub['pathway_description']=these_KOs[0]
+                
+                # save to file
+                filename=path_to_rec+'/'+my_dir+'/pathway_'+i+'.csv'
+                rec_sub.to_csv(filename, index=False, sep=',') 
+            
+            print("recognizer files for ", mysample, " have been split to pathways")
+
+        else: 
+            print('recognizer annotation file for', mysample, ' does not exists')
+                
+    else: # when dir it's not *.faa, pass
                 
         pass
 
@@ -103,7 +107,7 @@ for my_dir in os.listdir(my_path):
 # create KEGG directory 
 
 directory = "KEGG"
-parent_dir = my_path
+parent_dir = path_to_rec
 
 # create dir if it doesn't exist:
 if not os.path.isdir(os.path.join(parent_dir, directory)):
@@ -115,7 +119,7 @@ else:
 
 # concatenate files with same name within .faa: 
 file_paths = {}
-for root, dirs, files in os.walk(my_path):
+for root, dirs, files in os.walk(path_to_rec):
     for f in files:
         if f.startswith('pathway_'):
             if f not in file_paths:

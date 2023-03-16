@@ -23,7 +23,7 @@ start = time.time()
 #python eggnogg_split_into_paths.py 
 
 where=os.path.expanduser('~')
-path_to_wa_contigs=where+'/contigs/prodigal/eggnogg'
+path_to_egg=where+'/contigs/prodigal/eggnogg'
 
 ##########################################################################
 
@@ -59,19 +59,20 @@ my_pathways=new_pathways
 
 ##########################################################################
 
-for my_dir in os.listdir(path_to_wa_contigs):
+for my_dir in os.listdir(path_to_egg):
 
     if my_dir.endswith(".faa"):
 
         mysample = my_dir.replace(".faa", "")
         
-        egg=path_to_wa_contigs+'/'+my_dir+'/'+mysample+"_eggnogg_final.csv"
+        egg=path_to_egg+'/'+my_dir+'/'+mysample+"_eggnogg_final.csv"
         
         
         if os.path.isfile(egg):
             
             
             print('eggnog annotation file for', mysample, ' exists')
+            
             # 1. open rec file
             egg = pd.read_csv(egg, index_col=None)
             
@@ -94,7 +95,7 @@ for my_dir in os.listdir(path_to_wa_contigs):
                 egg_sub['pathway_description']=these_KOs[0]
     
                 # save to file
-                filename=path_to_wa_contigs+'/'+my_dir+'/pathway_'+i+'.csv'
+                filename=path_to_egg+'/'+my_dir+'/pathway_'+i+'.csv'
                 egg_sub.to_csv(filename, index=False, sep=',') 
             
             print("eggnogg annotation file for ", mysample, " have been split to pathways")
@@ -115,7 +116,7 @@ for my_dir in os.listdir(path_to_wa_contigs):
 # create KEGG directory 
 
 directory = "KEGG"
-parent_dir = path_to_wa_contigs
+parent_dir = path_to_egg
 
 # create dir if it doesn't exist:
 if not os.path.isdir(os.path.join(parent_dir, directory)):
@@ -127,7 +128,7 @@ else:
 
 # concatenate files with same name within .faa: 
 file_paths = {}
-for root, dirs, files in os.walk(path_to_wa_contigs):
+for root, dirs, files in os.walk(path_to_egg):
     for f in files:
         if f.startswith('pathway_'):
             if f not in file_paths:
