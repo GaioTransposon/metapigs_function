@@ -26,9 +26,8 @@ path_to_gtdb=where+"/github/metapigs_dry/middle_dir"
 
 # gtdb read in 
 gtdb = pd.read_csv(os.path.join(path_to_gtdb, "gtdb_bins_completeTaxa"))
-print(len(gtdb))
+print('gtdb file has ', len(gtdb), ' rows')
 gtdb['pig'] = gtdb['pig'].astype(str)
-type(gtdb)
 
 
 # get list of ids
@@ -43,6 +42,8 @@ controls=['Protexin','ColiGuard','MockCommunity','NegativeControl']
 
 
 for mysample in mysamples:
+    
+    print('\nsubject is: ', mysample)
 
     # open abundance file 
     counts=path_to_wa_contigs+"/counts_normalized_"+mysample
@@ -50,8 +51,6 @@ for mysample in mysamples:
     counts = pd.read_csv(counts)
     counts['bin'] = counts['bin'].astype(str)
     counts['pig'] = counts['pig'].astype(str)
-    print(len(counts))
-    type(counts)
     
     
     if mysample in controls:
@@ -61,22 +60,21 @@ for mysample in mysamples:
 
     # join 
     df1 = pd.merge(counts,gtdb,on=['bin','pig'], how="left") # "left" keeps everything in counts 
+    print(len(df1), ' rows of normalized counts + gtdb dataframe')
 
     recognizer=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/reCOGnizer_results_eval_filtered.csv"
     
     if os.path.isfile(recognizer):
         
-        print('recognizer annotation file for', mysample, ' exists')
+        print('recognizer annotation file exists')
         
         # read in
         recognizer = pd.read_csv(recognizer)
         recognizer['pig'] = recognizer['pig'].astype(str)
-        print(len(recognizer))
-        print(len(df1))
-    
+        print(len(recognizer), ' rows of recognizer file')
+
         df2 = pd.merge(recognizer,df1, on=['contig','pig'])
-        df2
-        print(len(df2))
+        print(len(df2), 'rows after merging')
         
         
         if mysample in controls:
@@ -87,7 +85,7 @@ for mysample in mysamples:
         # write 
         name_of_file=path_to_wa_contigs+"/prodigal/reCOGnizer_results/"+mysample+".faa/"+mysample+"_reCOGnizer_results_eval_filtered_final.csv"
         df2.to_csv(name_of_file, index=False) 
-        print('writing done')
+        print('writing of merged file done')
     
     
     else: 
