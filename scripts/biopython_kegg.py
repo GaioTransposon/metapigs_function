@@ -86,95 +86,101 @@ for path_file in os.listdir(where+'/KEGG/'):
 
 
 for intervals_rec_pathway in intervals_rec_pathways:
-    print(intervals_rec_pathway)
     
-    filename=where+'/KEGG/'+intervals_rec_pathway
-    rec=pd.read_csv(filename)
+    try:
     
-    #rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/eggnogg/KEGG/fc_t2_t8_all_pathway_ko00500.csv')
-    #intervals_rec_pathway='fc_t2_t8_all_pathway_ko00500.csv'
-    
-    # produce intervals 
-    log_fcs=rec['log_fc']
-    
-
-    if len(log_fcs)>1:
-        down=np.linspace(start=min(log_fcs), stop=0, num=10).tolist()
-        up=np.linspace(start=0, stop=max(log_fcs), num=10).tolist()
-        down_up=down+up
-        down_up.sort()
-        rec['log_fc']=pd.to_numeric(rec['log_fc'])
-        rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', include_lowest=True, labels=False)+1
-        # merge colors
-        rec = pd.merge(colors, rec, on='interval')
+        print(intervals_rec_pathway)
         
-            
-    else: # this happens when fold change info on only one KO out of all. then our scale goes -1 to 1 
-        down_up=np.linspace(start=-1, stop=+1, num=20).tolist()
-        down_up.sort()
-        rec['log_fc']=pd.to_numeric(rec['log_fc'])
-        rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', include_lowest=True, labels=False)+1
-        # merge colors
-        rec = pd.merge(colors, rec, on='interval')
+        filename=where+'/KEGG/'+intervals_rec_pathway
+        rec=pd.read_csv(filename)
         
-    # change color cell to white if significance is ns:
-    rec.loc[rec["significance"] == "ns", "color"] = "#FFFFFF"
+        #rec=pd.read_csv('/Users/dgaio/Desktop/contigs/prodigal/eggnogg/KEGG/fc_t2_t8_all_pathway_ko00500.csv')
+        #intervals_rec_pathway='fc_t2_t8_all_pathway_ko00500.csv'
         
-    # get pathway name from file: 
-    pathway_name=intervals_rec_pathway.split("_")[-1].split('.')[0]
+        # produce intervals 
+        log_fcs=rec['log_fc']
+        
     
-    # extract KGML
-    kgml = KGML_parser.read(kegg_get(pathway_name, "kgml"))
-
-
-    n=0
-    for element in kgml.orthologs: 
-        these_KOs=element.name.split() 
-        temps=[ele.replace('ko:','') for ele in these_KOs]
-        print("#######")
-        print(temps)
-        n+=1
-        print(n)
-        for graphic in element.graphics:
+        if len(log_fcs)>1:
+            down=np.linspace(start=min(log_fcs), stop=0, num=10).tolist()
+            up=np.linspace(start=0, stop=max(log_fcs), num=10).tolist()
+            down_up=down+up
+            down_up.sort()
+            rec['log_fc']=pd.to_numeric(rec['log_fc'])
+            rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', include_lowest=True, labels=False)+1
+            # merge colors
+            rec = pd.merge(colors, rec, on='interval')
             
+                
+        else: # this happens when fold change info on only one KO out of all. then our scale goes -1 to 1 
+            down_up=np.linspace(start=-1, stop=+1, num=20).tolist()
+            down_up.sort()
+            rec['log_fc']=pd.to_numeric(rec['log_fc'])
+            rec['interval']=pd.cut(x=rec['log_fc'], bins=down_up, duplicates='drop', include_lowest=True, labels=False)+1
+            # merge colors
+            rec = pd.merge(colors, rec, on='interval')
             
-            bg="#FFFFFF" # white
-            fg="#FFFFFF" # white
+        # change color cell to white if significance is ns:
+        rec.loc[rec["significance"] == "ns", "color"] = "#FFFFFF"
             
-            for i in temps:
-                if any(i in sublist for sublist in rec['KO']):             
-                    this_color=rec.loc[rec['KO'] == i]['color']
-                    this_color=str(this_color).split()[1]
-                    bg=this_color
-                    fg="#000000" # black
-                    
-                    # if rec.loc[rec['KO'] == i]['significance']=='ns':
-                    #     fg= "#000000"   # yellow: "#FFFF00"
-                    # elif rec.loc[rec['KO'] == i]['significance']=='*':
-                    #     fg='#DFFF00'
-                    tes='   '+str(rec.loc[rec['KO'] == i]['significance']).split()[1]
-                    
-                    # changing name of box to orthologous gene we have 
-                    element.graphics[0].name=i+tes
-                    
-                    print("yes", i+tes, bg, fg)
-                else:
-                    
-                    print("no", i)
-                    
-            graphic.bgcolor=bg
-            graphic.fgcolor=fg     
-            print(graphic.bgcolor, graphic.fgcolor)
+        # get pathway name from file: 
+        pathway_name=intervals_rec_pathway.split("_")[-1].split('.')[0]
+    
+        
+        # extract KGML
+        kgml = KGML_parser.read(kegg_get(pathway_name, "kgml"))
+    
+    
+        n=0
+        for element in kgml.orthologs: 
+            these_KOs=element.name.split() 
+            temps=[ele.replace('ko:','') for ele in these_KOs]
+            print("#######")
+            print(temps)
+            n+=1
+            print(n)
+            for graphic in element.graphics:
                 
                 
-    canvas = KGMLCanvas(kgml, import_imagemap=True)  # to include lines of the biochemistry 
-    
-    t_before=intervals_rec_pathway.split("_")[1]
-    t_after=intervals_rec_pathway.split("_")[2]
-    filename=where+'/KEGG/'+t_before+'_'+t_after+'_'+pathway_name+'.pdf'
-    canvas.draw(filename)
-    PDF(filename)
-    
+                bg="#FFFFFF" # white
+                fg="#FFFFFF" # white
+                
+                for i in temps:
+                    if any(i in sublist for sublist in rec['KO']):             
+                        this_color=rec.loc[rec['KO'] == i]['color']
+                        this_color=str(this_color).split()[1]
+                        bg=this_color
+                        fg="#000000" # black
+                        
+                        # if rec.loc[rec['KO'] == i]['significance']=='ns':
+                        #     fg= "#000000"   # yellow: "#FFFF00"
+                        # elif rec.loc[rec['KO'] == i]['significance']=='*':
+                        #     fg='#DFFF00'
+                        tes='   '+str(rec.loc[rec['KO'] == i]['significance']).split()[1]
+                        
+                        # changing name of box to orthologous gene we have 
+                        element.graphics[0].name=i+tes
+                        
+                        print("yes", i+tes, bg, fg)
+                    else:
+                        
+                        print("no", i)
+                        
+                graphic.bgcolor=bg
+                graphic.fgcolor=fg     
+                print(graphic.bgcolor, graphic.fgcolor)
+                    
+                    
+        canvas = KGMLCanvas(kgml, import_imagemap=True)  # to include lines of the biochemistry 
+        
+        t_before=intervals_rec_pathway.split("_")[1]
+        t_after=intervals_rec_pathway.split("_")[2]
+        filename=where+'/KEGG/'+t_before+'_'+t_after+'_'+pathway_name+'.pdf'
+        canvas.draw(filename)
+        PDF(filename)
+        
+    except:
+        print('kegg_get() could not find ', pathways_name, ' pathway')
 
 # =============================================================================
 # # example: Methane metabolism: 
