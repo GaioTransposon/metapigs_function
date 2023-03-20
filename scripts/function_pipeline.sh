@@ -14,16 +14,16 @@ cd github/metapigs_function/scripts
 
 #python normalize_counts.py
 
-python eggnogg_combine.py
+#python eggnogg_combine.py
 
 #python extract_KOs_of_paths.py
 
 #python ec_to_ko.py
 
-python eggnogg_split_into_paths.py
+#python eggnogg_split_into_paths.py
 
-python calculate_fold_change.py eggnogg t2 t8
-python calculate_fold_change.py eggnogg t0 t10
+#python calculate_fold_change.py eggnogg t2 t8
+#python calculate_fold_change.py eggnogg t0 t10
 
 python biopython_kegg.py eggnogg
 

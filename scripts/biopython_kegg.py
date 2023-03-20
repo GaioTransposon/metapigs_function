@@ -180,7 +180,7 @@ for intervals_rec_pathway in intervals_rec_pathways:
         PDF(filename)
         
     except:
-        print('kegg_get() could not find ', pathways_name, ' pathway')
+        print('kegg_get() could not find ', pathway_name, ' pathway')
 
 # =============================================================================
 # # example: Methane metabolism: 
