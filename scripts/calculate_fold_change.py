@@ -177,6 +177,8 @@ for path_file in os.listdir(where+'/KEGG'):
             filename=where+'/KEGG'+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
             to_save.to_csv(filename, index=False, sep=',') 
             
+            print('fold change for ', path_file, ' succesfully calculated.')
+            
         
         else: 
             
