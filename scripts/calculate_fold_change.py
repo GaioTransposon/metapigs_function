@@ -53,7 +53,7 @@ start = time.time()
 subjects=[]
 
 for path_file in os.listdir(where+'/KEGG'): 
-    if path_file.startswith("all_"):   
+    if path_file.startswith("all_pathway_ko00500"):   
         
         print(path_file)
         
