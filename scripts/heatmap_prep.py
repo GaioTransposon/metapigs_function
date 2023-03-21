@@ -60,7 +60,7 @@ my_KOs = list(dict.fromkeys(my_KOs))
 subjects=[]
 my_list=[]
 for path_file in os.listdir(where+'/KEGG'): 
-    if path_file.startswith("all_"):   
+    if path_file.startswith("all_path"):   
         
         print(path_file)
 
