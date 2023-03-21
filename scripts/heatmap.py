@@ -63,9 +63,7 @@ for path_file in os.listdir(where+'/KEGG'):
     if path_file.startswith("all_"):   
         
         print(path_file)
-        
-        
-        
+
         #path_file = 'all_pathway_ko00520.csv'
         
         df=where+'/KEGG'+'/'+path_file
@@ -103,8 +101,6 @@ for path_file in os.listdir(where+'/KEGG'):
             # filter dataframe based on list: 
             df4 = df2[df2['pig'].isin(subjects)] 
             
-            print(len(df4))
-            
             # add pseudo count (min non zero value) to all
             pseudo_count = df4.norm_mapped_wa[df4.norm_mapped_wa!=0].min()
             df4 = df4.copy()
@@ -114,13 +110,13 @@ for path_file in os.listdir(where+'/KEGG'):
             # group by KO,pig,date, and get mean 
             df5 = df4.groupby(['date','KO'], as_index=False).agg({'norm_mapped_wa': 'mean', 'pathway': 'first', 'pathway_description': 'first'})
             
-            df5['date'] = df5['date'].astype('category')
-            df5['date'] = df5['date'].cat.reorder_categories(['t0', 't2', 't4', 't6', 't8', 't10'])
-            
+
             df_wide=pd.pivot(df5, index=['pathway_description','pathway','KO'], columns = 'date',values = 'norm_mapped_wa')
 
-            
             my_list.append(df_wide)
+            
+        else: 
+            print("df empty - no KOs")
             
             
 dfs = pd.concat(my_list)
