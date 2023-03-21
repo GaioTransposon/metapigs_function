@@ -22,8 +22,8 @@ cd github/metapigs_function/scripts
 
 #python eggnogg_split_into_paths.py
 
-#python calculate_fold_change.py eggnogg t2 t8
-#python calculate_fold_change.py eggnogg t0 t10
+python calculate_fold_change.py eggnogg t2 t8
+python calculate_fold_change.py eggnogg t0 t10
 
 #python biopython_kegg.py eggnogg
 
