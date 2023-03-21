@@ -21,9 +21,6 @@ df %>%
 
 
 
-
-
-
 find_and_concat_fc <- function(path_to_fold_changes_files, fc) {
   
   these_files <- list.files(path = path_to_fold_changes_files, pattern=fc)
@@ -111,6 +108,101 @@ merged %>%
        y="log fc - interval t0-t10",
        title = "eggnog")
 
+
+
+
+
+
+
+
+
+path_to_pathways="/Users/dgaio/contigs/prodigal/eggnogg/KEGG/"
+these_files <- list.files(path = path_to_pathways, pattern="^all_")
+
+mylist=list()
+for (i in seq_along(these_files[1:3])) {
+  f_path=paste0(path_to_pathways,these_files[i])
+  keep <- read.csv(file = f_path) %>%
+    # first keep only data of subjects that have been sampled at all time points:  
+    dplyr::filter(date=="t0"|date=="t2"|date=="t4"|date=="t6"|date=="t8"|date=="t10") %>%
+    dplyr::select(pig,date) %>% distinct() %>% group_by(pig) %>% tally() %>% dplyr::filter(n==6) %>% dplyr::select(pig)
+
+}
+
+
+
+
+
+
+
+egg_all <- read_csv("/Users/dgaio/contigs/prodigal/eggnogg/KEGG/all_pathway_ko00500.csv") 
+
+View(egg_all)
+# first keep only data of subjects that have been sampled at all time points:  
+keep <- egg_all %>%
+  dplyr::filter(date=="t0"|date=="t2"|date=="t4"|date=="t6"|date=="t8"|date=="t10") %>%
+  dplyr::select(pig,date) %>% distinct() %>% group_by(pig) %>% tally() %>% dplyr::filter(n==6) %>% dplyr::select(pig)
+egg_sub <- egg_all[egg_all$pig %in% keep$pig,]
+# filter main time points: t0, t2, t4, t6, t8, t10. 
+df <- egg_sub %>%
+  dplyr::filter(date=="t0"|date=="t2"|date=="t4"|date=="t6"|date=="t8"|date=="t10")
+# order:
+df$date <- factor(df$date,levels=c("t0","t2","t4","t6","t8","t10"))
+
+df <- df %>%
+  group_by(pig,KO,date) %>%
+  dplyr::summarise(x=mean(norm_mapped_wa), .groups = "drop") 
+
+
+# split 
+multiple_DFs <- split( df , f = df$KO ,drop = TRUE)
+NROW(multiple_DFs)
+
+
+
+
+
+
+
+
+
+
+
+dfs <- read.csv(file = '/Users/dgaio/contigs/prodigal/eggnogg/KEGG/heatmap.csv')
+head(dfs)
+
+
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(patchwork)
+
+
+first <- dfs %>% 
+  group_by(pathway) %>%
+  tally() %>%
+  arrange(desc(n)) %>%
+  top_n(10)
+
+dfs_sub <- dfs[dfs$pathway %in% first$pathway,]
+
+df_full <- dfs_sub %>%
+  pivot_longer(cols=c("t0","t2","t4","t6","t8","t10"), names_to = "date") %>%
+  complete(nesting(pathway, KO), date) %>%
+  group_by(KO,pathway) %>%
+  dplyr::mutate(value=value/sum(value))
+
+
+minn=min(df_full$value)
+maxx=max(df_full$value)
+ggplot(df_full, aes(x = date, y = KO, fill = value)) +
+  geom_tile() +
+  theme_minimal() +
+  facet_grid(rows = vars(pathway_description), scales = "free_y", space = "free") +
+  scale_fill_gradientn(colours = c("blue", "white", "red"),
+                       values = scales::rescale(c(minn, -0.05, 0, maxx)))
 
 
 
