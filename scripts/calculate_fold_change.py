@@ -42,7 +42,7 @@ t_after=sys.argv[3]
 ##########################################################################
 
 # running time for all subjects: 2.5h 
-
+ 
 
 print('analysing time interval between', t_before, 'and', t_after)
 
