@@ -64,13 +64,15 @@ for path_file in os.listdir(where+'/KEGG'):
         
         print(path_file)
         
+        
+        
         #path_file = 'all_pathway_ko00520.csv'
         
         df=where+'/KEGG'+'/'+path_file
         
         # read in 
         df1 = pd.read_csv(df, index_col=None, low_memory=False)
-        
+
         
         # filter dataframe based on list of KOs: 
         df1 = df1[df1['KO'].isin(my_KOs)] 
@@ -83,7 +85,7 @@ for path_file in os.listdir(where+'/KEGG'):
             # subset dataframe to contain only two time intervals requested 
             intervals = ["t0", "t2", "t4", "t6", "t8", "t10"] 
             df2 = df1[df1['date'].isin(intervals)] 
-            
+
             # check which subjects have both time points and make list
             df3 = df2.groupby('pig')   
             
@@ -96,14 +98,17 @@ for path_file in os.listdir(where+'/KEGG'):
                         
                         subjects.append(",".join(str(x) for x in g['pig'].unique()))
     
-    
+            
+                        
             # filter dataframe based on list: 
             df4 = df2[df2['pig'].isin(subjects)] 
             
+            print(len(df4))
+            
             # add pseudo count (min non zero value) to all
-            # pseudo_count = df4.norm_mapped_wa[df4.norm_mapped_wa!=0].min()
-            # df4 = df4.copy()
-            # df4['norm_mapped_wa']=df4['norm_mapped_wa'].add(pseudo_count)
+            pseudo_count = df4.norm_mapped_wa[df4.norm_mapped_wa!=0].min()
+            df4 = df4.copy()
+            df4['norm_mapped_wa']=df4['norm_mapped_wa'].add(pseudo_count)
             
             
             # group by KO,pig,date, and get mean 

@@ -166,44 +166,56 @@ NROW(multiple_DFs)
 
 
 
-
-
-dfs <- read.csv(file = '/Users/dgaio/contigs/prodigal/eggnogg/KEGG/heatmap.csv')
-head(dfs)
-
-
-
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(purrr)
 library(patchwork)
+# downloaded ComplexHeatmamp locally from: https://cran.r-project.org/src/contrib/Archive/rjson/
+library(dendextend)
+library(ComplexHeatmap)
+library("cluster")
+library(scales)
 
+dfs <- read.csv(file = '/Users/dgaio/contigs/prodigal/eggnogg/KEGG/heatmap.csv')
 
-first <- dfs %>% 
+# dfs <- dfs %>%
+#   dplyr::select(pathway_description,pathway,KO,t2,t8)
+
+first <- as.list(dfs %>% 
   group_by(pathway) %>%
   tally() %>%
   arrange(desc(n)) %>%
-  top_n(10)
+  top_n(n = 4))
 
 dfs_sub <- dfs[dfs$pathway %in% first$pathway,]
 
-df_full <- dfs_sub %>%
-  pivot_longer(cols=c("t0","t2","t4","t6","t8","t10"), names_to = "date") %>%
-  complete(nesting(pathway, KO), date) %>%
-  group_by(KO,pathway) %>%
-  dplyr::mutate(value=value/sum(value))
+rownames(dfs_sub) <- paste0(dfs_sub$KO,'_',dfs_sub$pathway)
+mylabels <- dfs_sub$pathway_description
 
 
-minn=min(df_full$value)
-maxx=max(df_full$value)
-ggplot(df_full, aes(x = date, y = KO, fill = value)) +
-  geom_tile() +
-  theme_minimal() +
-  facet_grid(rows = vars(pathway_description), scales = "free_y", space = "free") +
-  scale_fill_gradientn(colours = c("blue", "white", "red"),
-                       values = scales::rescale(c(minn, -0.05, 0, maxx)))
 
+dfs_sub$pathway_description <- NULL
+dfs_sub$pathway <- NULL
+dfs_sub$KO <- NULL
+
+
+m <- as.matrix(dfs_sub)
+m <- rescale(m, to = c(-1, 1))    # doesn't change how results look; only the legend is clearer
+
+# split by a vector specifying rowgroups
+Heatmap(m, name = "avg_ab",
+        split = mylabels, 
+        row_names_gp = gpar(fontsize = 4), 
+        cluster_row_slices = TRUE, 
+        clustering_distance_rows = "euclidean",
+        show_row_dend = FALSE,
+        cluster_columns = FALSE, 
+        width = unit(6, "cm"), 
+        row_title_rot = 0, 
+        column_names_rot = 0, gap = unit(0.05, "cm"),
+        border = "black",
+        row_title_gp = gpar(fontsize = 7))
 
 
 
