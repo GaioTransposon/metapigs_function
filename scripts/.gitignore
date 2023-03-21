@@ -2,3 +2,4 @@
 .DS_Store
 *sh.e*
 *sh.o*
+.nfs*
