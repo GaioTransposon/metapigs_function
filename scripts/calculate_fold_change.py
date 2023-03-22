@@ -34,9 +34,20 @@ from collections import Counter
 #python calculate_fold_change.py eggnogg t2 t8    
 
 
-where=os.path.expanduser('~')+'/contigs/prodigal/'+sys.argv[1]  
+where=os.path.expanduser('~')+'/contigs/prodigal/'+sys.argv[1]     
 t_before=sys.argv[2]
 t_after=sys.argv[3]
+
+
+
+
+# running time for all subjects: 2.5h 
+print('analysing time interval between', t_before, 'and', t_after)
+start = time.time()
+
+
+
+
 
 
 ##########################################################################
@@ -46,23 +57,15 @@ t_after=sys.argv[3]
 pathways_avoid = ["all_pathway_ko01100.csv", "all_pathway_ko01110.csv", "all_pathway_ko01120.csv"]
 
 
-# running time for all subjects: 2.5h 
- 
-
-print('analysing time interval between', t_before, 'and', t_after)
-
-
-start = time.time()
-
-# list to add subjects who have the requested time intervals info 
-subjects=[]
-
 for path_file in os.listdir(where+'/KEGG'): 
     if path_file.startswith("all_"):   
         
         if path_file not in pathways_avoid: 
         
-            print(path_file)
+            # list to add subjects who have the requested time intervals info 
+            subjects=[]
+            
+            print('\n',path_file)
             
             #path_file = 'all_pathway_ko00520.csv'
             
@@ -70,6 +73,8 @@ for path_file in os.listdir(where+'/KEGG'):
             
             # read in 
             df1 = pd.read_csv(df, index_col=None, low_memory=False)
+            
+            
             
             
             # continue if df is not empty; 
@@ -80,19 +85,17 @@ for path_file in os.listdir(where+'/KEGG'):
                 intervals = [t_before, t_after] 
                 df2 = df1[df1['date'].isin(intervals)] 
                 
-                # check which subjects have both time points and make list
-                df3 = df2.groupby('pig')   
-                
+                # check which subjects have all requested time points and make list
+                df3 = df2.groupby('pig')    
                 for g in [df3.get_group(x) for x in df3.groups]:
-                    #print(g)
-                    
-                    if len(g['date'].unique())>1:
+                    if sorted(list(g['date'].unique())) == sorted(intervals):
+                        subjects.append(",".join(str(x) for x in g['pig'].unique()))
+                        #print(g['pig'].unique(), sorted(list(g['date'].unique())))
+                    else:
+                        pass
+                        #print('not all', g['pig'].unique(), sorted(list(g['date'].unique())))
                         
-                        if g['pig'].unique() not in subjects:
-                            
-                            subjects.append(",".join(str(x) for x in g['pig'].unique()))
-        
-        
+                #print(subjects)
                 # filter dataframe based on list: 
                 df4 = df2[df2['pig'].isin(subjects)] 
                 

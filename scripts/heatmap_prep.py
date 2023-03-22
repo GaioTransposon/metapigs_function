@@ -28,11 +28,9 @@ import seaborn as sns
 
 ##########################################################################
 
-
 where=os.path.expanduser('~')+'/contigs/prodigal/eggnogg'
 
 ##########################################################################
-
 
 my_KOs = list()
 
@@ -52,21 +50,22 @@ for path_file in os.listdir(where+'/KEGG'):
 # keep uniq
 my_KOs = list(dict.fromkeys(my_KOs))
 
-
 ##########################################################################
 
 # these need not be taken because besides being huge (44 to 165GB!) they are 
 # summaries of pathways we have anyway. 
 pathways_avoid = ["all_pathway_ko01100.csv", "all_pathway_ko01110.csv", "all_pathway_ko01120.csv"]
 
-# list to add subjects who have the requested time intervals info 
-subjects=[]
 my_list=[]
 for path_file in os.listdir(where+'/KEGG'): 
-    if path_file.startswith("all_path"):   
+    if path_file.startswith("all_"):   
+        
         if path_file not in pathways_avoid: 
             
-            print(path_file)
+            # list to add subjects who have the requested time intervals info 
+            subjects=[]
+            
+            print('\n',path_file)
     
             #path_file = 'all_pathway_ko00520.csv'
             
@@ -86,18 +85,17 @@ for path_file in os.listdir(where+'/KEGG'):
                 intervals = ["t0", "t2", "t4", "t6", "t8", "t10"] 
                 df2 = df1[df1['date'].isin(intervals)] 
     
-                # check which subjects have both time points and make list
+                # check which subjects have all requested time points and make list
                 df3 = df2.groupby('pig')   
-                
                 for g in [df3.get_group(x) for x in df3.groups]:
-                    #print(g)
-                    
-                    if len(g['date'].unique())>1:
+                    if sorted(list(g['date'].unique())) == sorted(intervals):
+                        subjects.append(",".join(str(x) for x in g['pig'].unique()))
+                        #print(g['pig'].unique(), sorted(list(g['date'].unique())))
+                    else:
+                        pass
+                        #print('not all', g['pig'].unique(), sorted(list(g['date'].unique())))
                         
-                        if g['pig'].unique() not in subjects:
-                            
-                            subjects.append(",".join(str(x) for x in g['pig'].unique()))
-                            
+                #print(subjects)
                 # filter dataframe based on list: 
                 df4 = df2[df2['pig'].isin(subjects)] 
                 
@@ -114,8 +112,8 @@ for path_file in os.listdir(where+'/KEGG'):
     
                 my_list.append(df_wide)
             
-        else: 
-            print("df empty - no KOs")
+            else: 
+                print("df empty - no KOs")
             
             
 dfs = pd.concat(my_list)
@@ -126,33 +124,7 @@ dfs.to_csv(filename, sep=',')
 
 
 
-
-
-# # # vis w/o row normalization 
-# # sns.heatmap(df_wide, linewidths=1.3, linecolor='black', cbar=True, cmap="coolwarm")
-
-# df_norm_row = dfs.apply(lambda x: (x-x.mean())/x.std(), axis = 1)
-# # # visualize without row normalization: 
-# # sns.heatmap(df_norm_row, linewidths=0.2, linecolor='black', cbar=True, cmap="coolwarm")
-
-# # clustered by KO trend with time
-# hm1=sns.clustermap(df_norm_row, linewidths=0.2, linecolor='black', 
-#                standard_scale = 0, # cluster by rows (0)    
-#                cmap="coolwarm", cbar=True, col_cluster=False)
-# hm1.ax_row_dendrogram.set_visible(False)
-
-        
-
-
-
-
-# # add pseudo count (min non zero value) to all
-# pseudo_count = df4.norm_mapped_wa[df4.norm_mapped_wa!=0].min()
-# df4 = df4.copy()
-# df4['norm_mapped_wa']=df4['norm_mapped_wa'].add(pseudo_count)
-            
-            
-            
+         
             
 
 
