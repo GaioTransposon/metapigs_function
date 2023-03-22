@@ -67,7 +67,7 @@ for path_file in os.listdir(where+'/KEGG'):
             
             print('\n',path_file)
             
-            #path_file = 'all_pathway_ko00520.csv'
+            #path_file = 'all_pathway_ko00254.csv'
             
             df=where+'/KEGG'+'/'+path_file
             
