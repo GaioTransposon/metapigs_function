@@ -192,7 +192,7 @@ for path_file in os.listdir(where+'/KEGG'):
         
         else: 
             
-            pass
+            print("df empty - no KOs")
                 
 
 
