@@ -23,7 +23,6 @@ from collections import Counter
 # filter intervals 
 # calc fold changes 
 
-
 ##########################################################################
 
 
@@ -67,19 +66,14 @@ for path_file in os.listdir(where+'/KEGG'):
             
             print('\n',path_file)
             
-            #path_file = 'all_pathway_ko00254.csv'
+            #path_file = 'all_pathway_ko00240.csv'
             
             df=where+'/KEGG'+'/'+path_file
             
             # read in 
             df1 = pd.read_csv(df, index_col=None, low_memory=False)
             
-            
-            
-            
-            # continue if df is not empty; 
-            # it would only be empty if no KO in this pathway, anywhere in our dataset
-            if len(df1)>1: 
+            if len(df1)>1: # will throw out empty dataframes (it would only be empty if no KO in this pathway, anywhere in our dataset)
                 
                 # subset dataframe to contain only two time intervals requested 
                 intervals = [t_before, t_after] 
@@ -90,12 +84,12 @@ for path_file in os.listdir(where+'/KEGG'):
                 for g in [df3.get_group(x) for x in df3.groups]:
                     if sorted(list(g['date'].unique())) == sorted(intervals):
                         subjects.append(",".join(str(x) for x in g['pig'].unique()))
-                        #print(g['pig'].unique(), sorted(list(g['date'].unique())))
+                        print(g['pig'].unique(), sorted(list(g['date'].unique())))
                     else:
                         pass
-                        #print('not all', g['pig'].unique(), sorted(list(g['date'].unique())))
+                        print('not all', g['pig'].unique(), sorted(list(g['date'].unique())))
                         
-                #print(subjects)
+                print(subjects)
                 # filter dataframe based on list: 
                 df4 = df2[df2['pig'].isin(subjects)] 
                 
@@ -123,20 +117,19 @@ for path_file in os.listdir(where+'/KEGG'):
                 n_subjects_list=[]
                 s_lists=[]
                 pval_lists=[]
+                n=0
                 for name,df in df4:
-                    print(name,df) 
-    
-                    try:
+                    
+                    if len(df)>2: # because if only 2 rows, there's only data from one subject - t-test will give unnnecessary warning, and we don't want results from n=1 anyway 
                         
-                        #####
-                        # t-test per KO:
+                        n+=1
+                        
+                        print('\n#####',n, name) 
                         a=df[df["date"]==t_before].norm_mapped_wa
                         b=df[df["date"]==t_after].norm_mapped_wa  
                         
-                        s,pval=stats.ttest_rel(a, b, alternative="two-sided")
-                        bonferroni_threshold=0.05/len(a)   
-                        
-                        
+                        s,pval=stats.ttest_rel(a.array, b.array, alternative="two-sided")
+                        bonferroni_threshold=0.05/len(a)  
                         if pval>0.05:
                             sign='ns'
                         elif pval<=bonferroni_threshold:
@@ -145,55 +138,57 @@ for path_file in os.listdir(where+'/KEGG'):
                             sign='*'
                         else:
                             sign='ns'
-    
+                            
                         # fold change per KO: 
-                        log_fc=np.log(np.mean(b)/np.mean(a))
-                        #####
+                        log_fc=np.log(np.mean(b)/np.mean(a)) 
+                        
+                        
+                        print('a:', len(a),'- b:', len(b))
                         print(name, s, pval, sign, "fold change for ", name, " succesfully calculated")
+                            
                         
-                    except: 
+                        t_statistic.append(s)
+                        p_val.append(pval)
+                        bonferroni_thresholds.append(bonferroni_threshold)
+                        significances.append(sign)
+                        log_fcs.append(log_fc)
+                        names.append(name)  
                         
-                        print(name, ": div by zero")
                         
-                    t_statistic.append(s)
-                    p_val.append(pval)
-                    bonferroni_thresholds.append(bonferroni_threshold)
-                    significances.append(sign)
-                    log_fcs.append(log_fc)
-                    names.append(name)  
-                    pathway.append(df['pathway'].unique().tolist())
-                    pathway_description.append(df['pathway_description'].unique().tolist())
+                        
+                        pathway.append(df['pathway'].unique().tolist())
+                        pathway_description.append(df['pathway_description'].unique().tolist())
+                        
+                        n_subjects=len(df['pig'].unique())
+                        n_subjects_list.append(n_subjects)
                     
-                    n_subjects=len(df['pig'].unique())
-                    n_subjects_list.append(n_subjects)
+                    # save results map 
+                    df5 = pd.DataFrame(np.column_stack([names, log_fcs, pathway, pathway_description, n_subjects_list, t_statistic, p_val, bonferroni_thresholds, significances]),    
+                                       columns=['KO', 'log_fc', 'pathway','pathway_description', 'n_subjects', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
+                        
                     
-    
-                # save results map 
-                df5 = pd.DataFrame(np.column_stack([names, log_fcs, pathway, pathway_description, n_subjects_list, t_statistic, p_val, bonferroni_thresholds, significances]),    
-                                   columns=['KO', 'log_fc', 'pathway','pathway_description', 'n_subjects', 't_statistic', 'p_val', 'bonferroni_threshold', 'significance'])   
-                    
-                
-                # converting to real nan
-                df5=df5.replace('nan', np.NaN)
-                # dropping rows contaning nan 
-                df5=df5.dropna()
-    
-                # add to list 
-                list_of_dataframes.append(df5)
-                
-                # make into a single dataframe and save to plot with biopython_kegg.py 
-                to_save = pd.concat(list_of_dataframes)
-                # write to file
-                filename=where+'/KEGG'+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
-                to_save.to_csv(filename, index=False, sep=',') 
-                
-                print('fold change for ', path_file, ' succesfully calculated.')
-            
+                    # converting to real nan
+                    df5=df5.replace('nan', np.NaN)
+                    # dropping rows contaning nan 
+                    df5=df5.dropna()
         
-        else: 
-            
-            print("df empty - no KOs")
+                    # add to list 
+                    list_of_dataframes.append(df5)
+                    
+                    # make into a single dataframe and save to plot with biopython_kegg.py 
+                    to_save = pd.concat(list_of_dataframes)
+                    # write to file
+                    filename=where+'/KEGG'+'/'+'fc_'+t_before+'_'+t_after+'_'+path_file
+                    to_save.to_csv(filename, index=False, sep=',') 
+                    
+                    print('fold change for ', path_file, ' succesfully calculated.')
                 
+            
+            else: 
+                
+                print("df empty - no KOs")
+
+     
 
 
 
