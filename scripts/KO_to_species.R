@@ -1,4 +1,7 @@
 
+.libPaths( c( .libPaths(), "/shared/homes/152324/R/library") )
+.libPaths( c( .libPaths(), "/shared/homes/152324/miniconda3/envs/recognizer_env/lib/R/library") )
+
 library(readr)
 library(dplyr)
 library(ggplot2)
