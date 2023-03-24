@@ -42,7 +42,7 @@ for path_file in os.listdir(where+'/KEGG'):
         # read in 
         df1 = pd.read_csv(df, index_col=None, low_memory=False)
         
-        df2 = df1[df1['significance'].isin(['*','**'])]
+        df2 = df1[df1['significance'].isin(['**'])]
         
         if (len(df2)>0): 
             my_KOs.append(str(df2['KO']).split()[1])
@@ -118,7 +118,7 @@ for path_file in os.listdir(where+'/KEGG'):
             
 dfs = pd.concat(my_list)
 
-filename=where+'/KEGG'+'/'+'heatmap.csv'
+filename=where+'/KEGG'+'/'+'heatmap_bonf.csv'
 dfs.to_csv(filename, sep=',') 
 
 
