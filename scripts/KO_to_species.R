@@ -22,7 +22,7 @@ for (f in these_files) {
   
   f_path=paste0(my_path,f)
   df <- read_csv(f_path)
-  
+  print(f_path)
   # ko00071 <- read.csv(file = '/Users/dgaio/contigs/prodigal/eggnogg/KEGG/all_pathway_ko00071')
 
   essential <- df %>%
@@ -40,6 +40,8 @@ for (f in these_files) {
     dplyr::arrange(KO,desc(perc)) %>%
     slice_head(n = 20)
   
+  head(x)
+  
   # save to file? 
   
   p1 <- x %>%
@@ -55,6 +57,8 @@ for (f in these_files) {
     dplyr::filter(perc>80  & species=="no_bin") %>%
     dplyr::select(KO)
   keep <- subset(x, !(KO %in% remove$KO))
+  
+  NROW(keep)
   
   # display for each, the top 3 species. 
   p2 <- keep %>% 
@@ -89,6 +93,7 @@ for (f in these_files) {
   p3 <- plot_grid(p1,p2,ncol=2)
   
   file_name <- paste0(my_path,'KO_species/',str_replace(f,".csv","_KO_species.pdf"))
+  
   pdf(file_name)
   p3 
   dev.off()
