@@ -73,7 +73,7 @@ for (f in these_files) {
     slice(1:3) 
   
   l=unique(keep$KO)
-  chunk_length=10
+  chunk_length=30
   chunks <- split(l,ceiling(seq_along(l) / chunk_length))
   
   n=0
