@@ -73,13 +73,13 @@ for (f in these_files) {
     slice(1:3) 
   
   l=unique(keep$KO)
-  chunk_length=30
+  chunk_length=10
   chunks <- split(l,ceiling(seq_along(l) / chunk_length))
   
   n=0
   plot_list = list()
   for (i in chunks) {
-    n=+1
+    n=n+1
     df_i <- subset(keep, (KO %in% i))
     plot_list[[n]] <- df_i %>%
       #drop.levels() %>% 
