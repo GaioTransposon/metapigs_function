@@ -14,6 +14,7 @@ library(stringr)
 
 
 
+
 # paths to use: 
 my_path <- "~/contigs/prodigal/eggnogg/KEGG/"
 print(my_path)
