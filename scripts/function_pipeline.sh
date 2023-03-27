@@ -27,4 +27,6 @@ cd github/metapigs_function/scripts
 
 #python biopython_kegg.py eggnogg
 
-python heatmap_prep.py
+#python heatmap_prep.py
+
+R < KO_to_species.R --vanilla
