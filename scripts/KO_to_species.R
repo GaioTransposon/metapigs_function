@@ -1,6 +1,10 @@
 
-.libPaths( c( .libPaths(), "/shared/homes/152324/R/library") )
-.libPaths( c( .libPaths(), "/shared/homes/152324/miniconda3/envs/recognizer_env/lib/R/library") )
+if (getwd()!="/Users/dgaio") {
+  .libPaths( c( .libPaths(), "/shared/homes/152324/R/library") )
+  .libPaths( c( .libPaths(), "/shared/homes/152324/miniconda3/envs/recognizer_env/lib/R/library") )
+} else {
+    message("Running on local")
+}
 
 library(readr)
 library(dplyr)
