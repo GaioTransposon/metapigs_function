@@ -43,11 +43,14 @@ for (f in these_files) {
     group_by(pathway_description,KO,species) %>%
     tally() %>%
     group_by(KO) %>%
-    dplyr::mutate(perc=round(n/sum(n)*100,2)) %>%
-    dplyr::arrange(KO,desc(perc)) %>%
-    slice_head(n = 20)
+    dplyr::mutate(perc=round(n/sum(n)*100,2)) #%>%
+    # group_by(KO) %>%
+    # top_n(n = 10, wt=perc) %>%
+    # dplyr::arrange(KO,desc(perc))
+    
   
-  NROW(x)
+  x %>% 
+    dplyr::filter(KO=="K00134") %>% dplyr::summarise(tot=sum(perc))
   
   # save to file? 
 
@@ -64,13 +67,14 @@ for (f in these_files) {
     dplyr::filter(perc>80  & species=="no_bin") %>%
     dplyr::select(KO)
   keep <- subset(x, !(KO %in% remove$KO))
-
   NROW(unique(keep$KO))
+  
   # display for each, the top 3 species. 
   keep <- keep %>% 
     group_by(KO) %>%
     top_n(n = 3, wt = perc) %>%
-    slice(1:3) 
+    slice(1:3) %>%
+    dplyr::arrange(KO,desc(perc))
   
   l=unique(keep$KO)
   chunk_length=30
