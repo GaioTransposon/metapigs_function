@@ -6,6 +6,7 @@ if (getwd()!="/Users/dgaio") {
     message("Running on local")
 }
 
+
 library(readr)
 library(dplyr)
 library(ggplot2)
