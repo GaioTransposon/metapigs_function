@@ -11,7 +11,7 @@ library(stringr)
 
 
 # paths to use: 
-my_path <- paste0(getwd(),"/contigs/prodigal/eggnogg/KEGG/") 
+my_path <- "~/contigs/prodigal/eggnogg/KEGG/"
 print(my_path)
 
 these_files <- list.files(path = my_path, pattern="^all")
