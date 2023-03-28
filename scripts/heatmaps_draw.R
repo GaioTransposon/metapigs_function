@@ -24,7 +24,7 @@ give_heatmap <- function(mykeywords_selection){
   mykeywords_selection <- paste(mykeywords_selection, collapse='|')
   
   dfs_sub <- dfs[grepl(mykeywords_selection, dfs$pathway_description, ignore.case = TRUE), ]
-  
+
   rownames(dfs_sub) <- paste0(dfs_sub$KO,'_',dfs_sub$pathway)
   mylabels <- dfs_sub$pathway_description
   
@@ -33,11 +33,15 @@ give_heatmap <- function(mykeywords_selection){
   dfs_sub$KO <- NULL
   
   m <- as.matrix(dfs_sub)
+  #log(n/mean(row))
+  
+  #m <- t(apply(m, 1, function(x) log(x(mean())))
+  
   
   col.order <- c("t0","t2","t4","t6","t8","t10") # "t0","t2","t4","t6","t8","t10"
   m <- m[ , col.order]
   
-  m <- t(apply(m, 1, function(x) rescale(x, to=c(-1,1))))
+  #m <- t(apply(m, 1, function(x) rescale(x, to=c(-1,1))))
   
   
   # split by a vector specifying rowgroups

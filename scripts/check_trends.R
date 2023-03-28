@@ -19,7 +19,7 @@ NROW(ko00071)
 
 # Filter out 1 ortholog gene that shows a time trend, for example: K00022
 K00022 <- ko00071 %>%
-  dplyr::filter(KO=="K01692") 
+  dplyr::filter(KO=="K00022") 
 
 K00022["species"][K00022["species"] == ''] <- "none"
 K00022$species
