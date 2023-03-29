@@ -25,6 +25,7 @@ library(tidyverse)
 
 
 
+
 # open df containing only nearly complete MAGs
 checkm_all_nearly <- read_delim("~/github/metapigs_dry/middle_dir/checkm_all_nearly",
                                 "\t", escape_double = FALSE, trim_ws = TRUE)
