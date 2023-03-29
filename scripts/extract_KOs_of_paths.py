@@ -101,19 +101,36 @@ with open(filename, 'wb') as fp:
 ##########################################################################
 
 
+my_dict = pd.read_pickle(filename)
 
+
+map_ko=[]
+for key in my_dict.keys():
+        map_ko.append(key)
+        
+pathway_description=[]
+for i in my_dict:
+    pathway_description.append(my_dict[i][0])
     
+KOs_per_pathway=[]
+for i in my_dict:
+    KOs_per_pathway.append(len(my_dict[i])-1)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+# save into a single df 
+unpickled = pd.DataFrame(np.column_stack([map_ko, pathway_description, KOs_per_pathway]),    
+                   columns=['map_ko', 'pathway_description', 'KOs_per_pathway'])   
+                        
+
+# write to file
+filename=my_path+"/pathways_lengths.csv"
+unpickled.to_csv(filename, index=False, sep=',') 
+                    
+                  
+
+
+
+
+
+
