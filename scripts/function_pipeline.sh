@@ -29,4 +29,5 @@ cd github/metapigs_function/scripts
 
 #python heatmap_prep.py
 
-R < KO_to_species.R --vanilla
+#R < KO_to_species.R --vanilla
+R < umap_pathways_species.R --vanilla 
