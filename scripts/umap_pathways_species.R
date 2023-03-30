@@ -51,31 +51,40 @@ df_list=list()
 for (f in these_files) {
   
   f_path=paste0(my_path,f)
-  df <- read_csv(f_path, col_types = cols(species = col_character()))
+  df <- read_csv(f_path, col_types = cols(
+    species = col_character(),
+    pig = col_character()))
   
+  # go ahead if pathway is not empty (KOs were found)
   if (NROW(df) > 0) {
     
     NROW(df)
     NROW(checkm_all_nearly)
-    df <- left_join(checkm_all_nearly,df)
-    NROW(df)
+
+    df_merged <- inner_join(df,checkm_all_nearly, by=c("pig","bin"))
+    NROW(df_merged)
     
-    print(f_path)
-    
-    descr <- unique(df$pathway_description)
-    
-    essential <- df %>%
-      dplyr::select(KO,species) %>%
-      distinct()
-    
-    # if species is NA, assign no_bin
-    essential$species <- essential$species %>% replace_na('no_bin')
-    
-    save <- essential %>%
-      group_by(species) %>%
-      tally()
-    
-    df_list[[descr]] <- save
+    # it can happen that no bins are left after the inner_join:
+    if (NROW(df_merged) > 0) {
+      
+      descr <- unique(df_merged$pathway_description)
+      print(f)
+      print(descr)
+      
+      essential <- df_merged %>%
+        dplyr::select(KO,species) %>%
+        distinct()
+      
+      # if species is NA, assign no_bin
+      essential$species <- essential$species %>% replace_na('no_bin')
+      
+      save <- essential %>%
+        group_by(species) %>%
+        tally()
+      
+      df_list[[descr]] <- save
+
+    }
     
   }
   
