@@ -22,14 +22,17 @@ library(matrixStats)
 # BiocManager::install("InteractiveComplexHeatmap")
 library(InteractiveComplexHeatmap)
 library(shiny)
+library(factoextra)
 
 
 # VISUALIZATION:
 
+my_path <- "~/contigs/prodigal/eggnogg/KEGG/"
+print(my_path)
 
 filename <- paste0(my_path,"KO_species/","KO_to_species_bestMAGs.csv")
-all_dfs <- read_csv(filename, col_types = cols(species = col_character()))
-
+all_dfs <- read_csv(filename, col_types = cols(species = col_character())) %>% 
+  dplyr::filter(!species=="no_bin")
 pathways_lengths <- read_csv("github/metapigs_function/middle_dir/pathways_lengths.csv")
 
 
@@ -40,6 +43,9 @@ NROW(merged)
 head(merged)
 unique(merged$paths)
 
+
+
+
 merged <- merged %>%
   dplyr::filter(!map_ko=="ko00363") %>% # removing as this pathway is only made of 2 KOs (the next bigger one is made out of 7)
   dplyr::mutate(ratio=n/KOs_per_pathway) %>%
@@ -48,45 +54,64 @@ head(merged)
 
 
 dfs_sub <- as.data.frame(merged %>%
-                           #subset(., (paths %in% carb) | (paths %in% ene) | (paths %in% bile) | (paths %in% aa)) %>% # 
+                           subset(., (paths %in% abx)) %>% # | (paths %in% ene) | (paths %in% bile) | (paths %in% aa)) %>% # 
                            pivot_wider(names_from = species, values_from = ratio, values_fill = 0)) # fills with 0 if NA
 head(dfs_sub)
+
+
 
 # get rid of pathways not informative - low variance per row
 dfs_sub$row_var = rowVars(as.matrix(dfs_sub[,-1]))
 dfs_sub <- dfs_sub %>%
   dplyr::arrange(desc(row_var)) %>% # highest variance on top
-  slice(1:ceiling(NROW(dfs_sub)/100*90)) # remove paths with lowest variance (10% of tot paths)
+  slice(1:ceiling(NROW(dfs_sub)/100*90)) %>% # remove paths with lowest variance (10% of tot paths)
+  dplyr::select(!row_var)
 
 rownames(dfs_sub) <- dfs_sub$paths
 mylabels <- dfs_sub$paths
 dfs_sub$paths <- NULL
 dfs_sub$row_var <- NULL
 
+myspecies <- as.data.frame(colnames(dfs_sub))
+colnames(myspecies) <- "species"
+class(myspecies)
+head(myspecies)
+myphy <- inner_join(myspecies,gtdb) #%>% dplyr::select(phylum)
 
 
 m <- as.matrix(dfs_sub)
 
+length(myphy$phylum)
+NCOL(m)
+
+sort(colnames(m))
+rownames(m)
 
 
 # split by a vector specifying rowgroups
 my_m <- Heatmap(m, name = "avg_ab",
-                #row_names_gp = gpar(fontsize = 4),
-                #column_names_gp = gpar(fontsize = 4),
+                row_names_gp = gpar(fontsize = 6),
+                column_names_gp = gpar(fontsize = 4),
+                column_dend_gp = gpar(fontsize = 4),
+                column_gap = unit(0.05, "cm"), 
+                column_dend_height=unit(0.5, "cm"), 
+                column_title_gp = gpar(fontsize=2),
+                column_title_rot = 90,
                 clustering_distance_rows = "euclidean",
                 show_row_dend = FALSE,
                 cluster_rows = TRUE,
                 cluster_columns = TRUE,
-                width = unit(20, "cm"),
+                column_split = myphy$phylum,
+                width = unit(15, "cm"),
                 row_title_rot = 0,
-                gap = unit(0.02, "cm"),
+                gap = unit(0.01, "cm"), 
                 border = "black",row_names_rot = 0,
                 row_title_gp = gpar(fontsize = 7))
 
 
-pheatmap(m, scale="column", cluster_rows = TRUE, cluster_cols= TRUE,
-         fontsize_col = 1, fontsize_row = 4, treeheight_row = 1,
-         color=colorRampPalette(c("navy", "white", "red"))(20))
+# pheatmap(m, scale="column", cluster_rows = TRUE, cluster_cols= TRUE,
+#          fontsize_col = 1, fontsize_row = 4, treeheight_row = 1,
+#          color=colorRampPalette(c("navy", "white", "red"))(20))
 
 
 
@@ -106,41 +131,6 @@ shinyApp(ui, server)
 
 
 
-# #############
-# m.pca2 <- prcomp(m[,-1], center = TRUE,scale. = TRUE)
-# paths <- substr(m$paths, start = 1, stop = 8)
-# 
-# fviz_pca_ind(m.pca2,
-#              geom.ind="point",
-#              #fill.ind = dates, #col.ind = rainbow(n = 11),
-#              pointshape = 21, pointsize = 2,
-#              habillage = paths,
-#              #geom.ind = "point", # show points only (nbut not "text")
-#              col.ind = paths, # color by groups
-#              #palette = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              addEllipses = FALSE, # Concentration ellipses
-#              title="")+
-#   scale_color_manual(name="time point",
-#                      values=rainbow(n = NROW(m)))+
-#   theme(legend.position="none")+
-#   guides(color = guide_legend(nrow = 1))
-# 
-# fviz_pca_biplot(m.pca2,
-#                 axes=c(1,2),   # which PCA ordinates
-#                 select.var = list(cos2 = 20), # how many species to show - top n
-#                 #select.ind = list(cos2 = 20), # how many paths to show -  top n
-#                 label = "var",
-#                 geom.ind=c("point","text"),
-#                 geom.var=c("arrow","text"),
-#                 pointshape = 21, pointsize = 2,
-#                 habillage = paths,
-#                 alpha.var ="contrib",
-#                 col.ind = "#00AFBB",
-#                 repel = TRUE,
-#                 labelsize=1) +
-#   scale_color_manual(name="paths",
-#                      values=rainbow(n = NROW(m)))+
-#   ggtitle("")+
-#   theme(legend.position="right",
-#         panel.border = element_rect(colour = "black", fill=NA, size=1))
-# #############
+
+
+

@@ -65,12 +65,12 @@ give_heatmap <- function(mykeywords_selection){
 
 
 
-#abx <- c("antimicrobial", "antibiotic", "vancomycin", "CAMP", "drug resistance", "Lactam", "Antifolate")
+abx <- c("antimicrobial", "antibiotic", "vancomycin", "CAMP", "drug resistance", "Lactam", "Antifolate")
 #give_heatmap(abx)
 
 # https://www.genome.jp/kegg-bin/show_organism?menu_type=pathway_maps&category=Bacteria
 
-carb <- c("Glycolysis / Gluconeogenesis","Citrate cycle (TCA cycle)",
+carbohydrate_metabolism <- c("Glycolysis / Gluconeogenesis","Citrate cycle (TCA cycle)",
           "Pentose phosphate pathway","Pentose and glucuronate interconversions",
           "Fructose and mannose metabolism","Galactose metabolism",
           "Ascorbate and aldarate metabolism","Starch and sucrose metabolism",
@@ -79,13 +79,13 @@ carb <- c("Glycolysis / Gluconeogenesis","Citrate cycle (TCA cycle)",
           "Butanoate metabolism","C-Branched dibasic acid metabolism",
           "Inositol phosphate metabolism")
 
-ene <- c("Oxidative phosphorylation","Photosynthesis",
+energy_metabolism <- c("Oxidative phosphorylation","Photosynthesis",
          "Photosynthesis - antenna proteins",
          "Carbon fixation in photosynthetic organisms",
          "Carbon fixation pathways in prokaryotes","Methane metabolism",
          "Nitrogen metabolism","Sulfur metabolism")
 
-lipid <- c("Fatty acid biosynthesis","Fatty acid elongation",
+lipid_metabolism <- c("Fatty acid biosynthesis","Fatty acid elongation",
            "Fatty acid degradation","Cutin, suberine and wax biosynthesis",
            "Steroid biosynthesis",
            "Primary bile acid biosynthesis","Secondary bile acid biosynthesis",
@@ -95,12 +95,9 @@ lipid <- c("Fatty acid biosynthesis","Fatty acid elongation",
            "Linoleic acid metabolism","alpha-Linolenic acid metabolism",
            "Biosynthesis of unsaturated fatty acids")
 
+nucleotide_metabolism <- c("Purine metabolism","Pyrimidine metabolism")
 
-bile <- c("Primary bile acid biosynthesis","Secondary bile acid biosynthesis")
-
-nuc <- c("Purine metabolism","Pyrimidine metabolism")
-
-aa <- c("Alanine, aspartate and glutamate metabolism",
+amino_acid_metabolism <- c("Alanine, aspartate and glutamate metabolism",
         "Glycine, serine and threonine metabolism","Cysteine and methionine metabolism",
         "Valine, leucine and isoleucine degradation",
         "Valine, leucine and isoleucine biosynthesis","Lysine biosynthesis",
@@ -109,12 +106,12 @@ aa <- c("Alanine, aspartate and glutamate metabolism",
         "Phenylalanine metabolism","Tryptophan metabolism",
         "Phenylalanine, tyrosine and tryptophan biosynthesis")
 
-oth_aa <- c("beta-Alanine metabolism","Taurine and hypotaurine metabolism",
+other_amino_acid_metabolism <- c("beta-Alanine metabolism","Taurine and hypotaurine metabolism",
             "Phosphonate and phosphinate metabolism", "Selenocompound metabolism",
             "Cyanoamino acid metabolism","D-Amino acid metabolism",
             "Glutathione metabolism")
 
-glycan <- c("N-Glycan biosynthesis","Various types of N-glycan biosynthesis",
+glycan_biosynthesis_metabolism <- c("N-Glycan biosynthesis","Various types of N-glycan biosynthesis",
          "Mucin type O-glycan biosynthesis","Mannose type O-glycan biosynthesis",
          "Other types of O-glycan biosynthesis",
          "Glycosaminoglycan biosynthesis - chondroitin sulfate / dermatan sulfate",
@@ -131,14 +128,13 @@ glycan <- c("N-Glycan biosynthesis","Various types of N-glycan biosynthesis",
          "Arabinogalactan biosynthesis - Mycobacterium",
          "Exopolysaccharide biosynthesis") 
 
-co_vit <- c("Thiamine metabolism","Riboflavin metabolism","Vitamin B metabolism",
+cofactors_and_vitamins_metabolism <- c("Thiamine metabolism","Riboflavin metabolism","Vitamin B metabolism",
             "Nicotinate and nicotinamide metabolism","Pantothenate and CoA biosynthesis",
             "Biotin metabolism","Lipoic acid metabolism","Folate biosynthesis",
             "One carbon pool by folate","Retinol metabolism","Porphyrin metabolism",
             "Ubiquinone and other terpenoid-quinone biosynthesis")
 
-
-terp <- c("Terpenoid backbone biosynthesis","Monoterpenoid biosynthesis",
+terpenoids_polyketdes_metabolism <- c("Terpenoid backbone biosynthesis","Monoterpenoid biosynthesis",
           "Sesquiterpenoid and triterpenoid biosynthesis","Diterpenoid biosynthesis",
           "Carotenoid biosynthesis","Brassinosteroid biosynthesis",
           "Insect hormone biosynthesis","Zeatin biosynthesis","Limonene degradation",
@@ -150,7 +146,7 @@ terp <- c("Terpenoid backbone biosynthesis","Monoterpenoid biosynthesis",
           "Biosynthesis of siderophore group nonribosomal peptides",
           "Biosynthesis of vancomycin group antibiotics")
 
-sec_met <- c("Phenylpropanoid biosynthesis",
+other_secondary_metabolites_biosynthesis <- c("Phenylpropanoid biosynthesis",
              "Stilbenoid, diarylheptanoid and gingerol biosynthesis","Flavonoid biosynthesis",
              "Flavone and flavonol biosynthesis","Anthocyanin biosynthesis",
              "Isoflavonoid biosynthesis","Degradation of flavonoids",
@@ -166,9 +162,21 @@ sec_met <- c("Phenylpropanoid biosynthesis",
              "Staurosporine biosynthesis","Phenazine biosynthesis","Prodigiosin biosynthesis",
              "Aflatoxin biosynthesis","Biosynthesis of various antibiotics",
              "Biosynthesis of various plant secondary metabolites",
-             "Biosynthesis of various other secondary metabolites")
+             "Biosynthesis of various other secondary metabolites") 
+xenobiotics_biodegradation <- c("Benzoate degradation", "Aminobenzoate degradation", 
+                                "Fluorobenzoate degradation", "Chloroalkane and chloroalkene degradation", 
+                                "Chlorocyclohexane and chlorobenzene degradation", "Toluene degradation", 
+                                "Xylene degradation", "Nitrotoluene degradation", 
+                                "Ethylbenzene degradation", "Styrene degradation", 
+                                "Atrazine degradation", "Caprolactam degradation", 
+                                "Bisphenol degradation", "Dioxin degradation", 
+                                "Naphthalene degradation", "Polycyclic aromatic hydrocarbon degradation",
+                                "Furfural degradation", "Steroid degradation", 
+                                "Metabolism of xenobiotics by cytochrome P450", 
+                                "Drug metabolism - cytochrome P450", "Drug metabolism - other enzymes")
 
 
+bile <- c("Primary bile acid biosynthesis","Secondary bile acid biosynthesis")
 
 
 pdf("~/Desktop/heatmap.pdf")
@@ -185,3 +193,35 @@ give_heatmap(terp)
 give_heatmap(sec_met)
 dev.off()
 
+
+library(rvest)
+html <- read_html("https://www.genome.jp/kegg-bin/show_organism?menu_type=pathway_maps&category=Prokaryotes") #"https://www.genome.jp/kegg/pathway.html") #https://www.kegg.jp/kegg/pathway.html#metabolism
+
+class(html)
+html
+
+
+a <- html %>% 
+  html_elements("body") %>% 
+  #html_elements("div") %>%
+  html_text2() %>% 
+  cat()
+
+class(a)
+a
+
+mylist <- as.list(strsplit(a, "\n\n")[[1]])
+newlist <- list()
+
+for (i in mylist) {
+  
+  for (ii in i) {
+    
+    ii <- as.list(strsplit(ii, "\n")[[1]])
+    print(ii)
+    #newlist[[ii[1]]] <- ii
+  
+    
+  }
+}
+  
