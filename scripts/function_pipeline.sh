@@ -16,9 +16,9 @@ cd github/metapigs_function/scripts
 
 #python eggnogg_combine.py
 
-#python extract_KOs_of_paths.py
+#python webscrape_pathways.py 
 
-#python ec_to_ko.py
+#python extract_KOs_of_paths.py
 
 #python eggnogg_split_into_paths.py
 
