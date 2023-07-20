@@ -22,7 +22,9 @@ from colour import Color
 import seaborn as sns
 import csv
 import pickle
-
+import requests
+from Bio.KEGG.REST import kegg_link
+import pandas as pd
 
 ##########################################################################
 
@@ -32,105 +34,49 @@ my_path=os.path.expanduser('~')+'/github/metapigs_function/middle_dir'
 
 
 
-# list each path available: 
-pathways = kegg_list('pathway').read()
+# Load the DataFrame from the CSV file
+filename = my_path+'/pathways_selection.csv'
+pathways_selection = pd.read_csv(filename)
 
-pathways_list = str.split(pathways, sep="\n")
+# Make an explicit copy of the slice to avoid SettingWithCopyWarning
+paths_df = pathways_selection.copy()
 
-len(pathways_list)
+print(paths_df)
 
-paths=[]
-descr=[]
 
-for i in pathways_list:
-    i=i.split('\t')
-    print(i)
-    if len(i)>1:
-        i[0]=i[0].replace("path:map","ko")
-        paths.append(i[0])
-        descr.append(i[1])
-    else:
-        pass
 
-paths_df = pd.DataFrame(np.column_stack([paths, descr]), 
-                         columns=['path', 'description'])
 
 ##############    
 # for each path, get KOs: 
-my_dic={} 
-successful=0
-failed=0
-for index, row in paths_df.iterrows():   # for testing purposes: paths_df[0:10]
-    print(index,row)
-    KOs_list=[]
-    
-    # append , as first item, pathways description: 
-    KOs_list.append(row[1])
-    
-    try:    
-        import requests
-        requests.get(url)
-        my_pathway = KGML_parser.read(kegg_get(row['path'], "kgml"))
+def retrieve_kos(pathway_id):
+    """Retrieve a list of KOs for a given pathway ID"""
+    print(f"Retrieving KOs for pathway: {pathway_id}")
+    kos = kegg_link("ko", pathway_id).read()  # Get the links between KOs and the pathway
+    kos = kos.split("\n")  # Split the result into lines
+    kos = [ko.split("\t")[1].replace("ko:", "") for ko in kos if ko]  # Extract KO IDs
+    return kos
 
-        for element in my_pathway.orthologs:    
-            these_KOs=element.name.split()   
-        
-            for k in these_KOs:
-                k=k.replace("ko:","")
-                KOs_list.append(k)
-    
-        my_dic[row[0]]=KOs_list
-        print(" path number ", index+1, ' - ', row['path'], " saved in dictionary")
-        successful+=1
+# Apply the function to each pathway in the DataFrame
+paths_df.loc[:, 'kos'] = paths_df['path'].apply(retrieve_kos)
 
-    except:
-        failed+=1
-        print(" path number ", index+1, ' - ', row['path'], " could not be saved")
-    
-print('succesfully saved to dictionary: n =', successful, '\n',
-      'failed to save to dictionary: n =', failed)
+# Add a new column for the number of KOs
+paths_df.loc[:, 'no_KOs'] = paths_df['kos'].apply(len)
+
+print(paths_df)
 
 
-# write the dictionary to file
-filename=my_path+"/pathways.pkl"
-with open(filename, 'wb') as fp:
-    pickle.dump(my_dic, fp)
-    print('dictionary saved successfully to file')
-    
-    
+# First remove the rows for whoch no kos were found: 
+# Remove rows where 'no_KOs' is 0
+paths_df = paths_df[paths_df['no_KOs'] != 0]
+
+
+# Save 
+filename=my_path+"/pathways_selection_with_KOs.csv"
+paths_df.to_csv(filename, index=False)
+
+
 ##########################################################################
 
 
-my_dict = pd.read_pickle(filename)
-
-
-map_ko=[]
-for key in my_dict.keys():
-        map_ko.append(key)
-        
-pathway_description=[]
-for i in my_dict:
-    pathway_description.append(my_dict[i][0])
-    
-KOs_per_pathway=[]
-for i in my_dict:
-    KOs_per_pathway.append(len(my_dict[i])-1)
-    
-
-
-# save into a single df 
-unpickled = pd.DataFrame(np.column_stack([map_ko, pathway_description, KOs_per_pathway]),    
-                   columns=['map_ko', 'pathway_description', 'KOs_per_pathway'])   
-                        
-
-# write to file
-filename=my_path+"/pathways_lengths.csv"
-unpickled.to_csv(filename, index=False, sep=',') 
                     
                   
-
-
-
-
-
-
