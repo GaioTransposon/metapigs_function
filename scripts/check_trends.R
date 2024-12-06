@@ -14,7 +14,7 @@ library(data.table)
 library(tidyverse)
 
 
-ko00071 <- read.csv(file = '/Users/dgaio/contigs/prodigal/eggnogg/KEGG/all_pathway_ko00071')
+ko00071 <- read.csv(file = '/Users/dgaio/contigs/prodigal/eggnogg/KEGG/all_pathway_ko00071.csv')
 NROW(ko00071)
 
 # Filter out 1 ortholog gene that shows a time trend, for example: K00022
